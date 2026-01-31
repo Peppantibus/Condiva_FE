@@ -1,13 +1,13 @@
-import { api } from './client';
-import { CreateItemRequestDto, ItemDetailsDto, ItemListItemDto, UpdateItemRequestDto } from './types';
+import { apiClient } from './client';
+import { CreateItemRequestDto, UpdateItemRequestDto } from './types';
 
-export const listItems = (communityId: string) => api.get<ItemListItemDto[]>('/api/items', { communityId });
+export const listItems = (communityId: string) => apiClient.itemsAll(communityId);
 
-export const getItem = (id: string) => api.get<ItemDetailsDto>(`/api/items/${id}`);
+export const getItem = (id: string) => apiClient.itemsGET(id);
 
-export const createItem = (payload: CreateItemRequestDto) => api.post<ItemDetailsDto>('/api/items', payload);
+export const createItem = (payload: CreateItemRequestDto) => apiClient.itemsPOST(payload as any);
 
 export const updateItem = (id: string, payload: UpdateItemRequestDto) =>
-  api.put<ItemDetailsDto>(`/api/items/${id}`, payload);
+  apiClient.itemsPUT(id, payload as any);
 
-export const deleteItem = (id: string) => api.del<void>(`/api/items/${id}`);
+export const deleteItem = (id: string) => apiClient.itemsDELETE(id);

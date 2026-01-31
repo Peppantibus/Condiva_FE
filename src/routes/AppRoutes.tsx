@@ -4,8 +4,10 @@ import AppLayout from '../components/AppLayout';
 import { useAuth } from '../state/auth';
 import DashboardPage from '../pages/DashboardPage';
 import CommunityPage from '../pages/CommunityPage';
+import CommunityMembersPage from '../pages/CommunityMembersPage';
 import ItemsPage from '../pages/ItemsPage';
 import JoinPage from '../pages/JoinPage';
+import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
 import MePage from '../pages/MePage';
 import RecoveryPage from '../pages/RecoveryPage';
@@ -25,6 +27,7 @@ const RequireAuthLayout: React.FC = () => {
 
 const AppRoutes: React.FC = () => (
   <Routes>
+    <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/recovery" element={<RecoveryPage />} />
@@ -33,9 +36,11 @@ const AppRoutes: React.FC = () => (
     <Route path="/join" element={<JoinPage />} />
 
     <Route element={<RequireAuthLayout />}>
-      <Route index element={<Navigate to="/dashboard" replace />} />
+      {/* Route index removed since it's handled by root LandingPage */}
+      {/* If user navigates to /dashboard manually while logged in, it works */}
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/community" element={<CommunityPage />} />
+      <Route path="/community/:id/members" element={<CommunityMembersPage />} />
       <Route path="/requests" element={<RequestsPage />} />
       <Route path="/requests/:id" element={<RequestDetailsPage />} />
       <Route path="/items" element={<ItemsPage />} />

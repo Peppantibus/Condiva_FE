@@ -5,251 +5,61 @@ export type LoanStatus = 'Reserved' | 'InLoan' | 'Returned' | 'Expired';
 export type MembershipRole = 'Owner' | 'Member' | 'Moderator';
 export type MembershipStatus = 'Invited' | 'Active' | 'Suspended';
 
-export type UserSummaryDto = {
-  id: string;
-  displayName: string;
-  userName: string;
-};
+type NonUndefined<T> = T extends undefined ? never : T;
+type DeepRequired<T> =
+  T extends Function ? T :
+  T extends Array<infer U> ? Array<DeepRequired<NonUndefined<U>>> :
+  T extends object ? { [K in keyof T]-?: DeepRequired<NonUndefined<T[K]>> } :
+  NonUndefined<T>;
 
-export type CommunitySummaryDto = {
-  id: string;
-  name: string;
-  slug: string;
-};
+export type AccessTokenResult = DeepRequired<import('./client/client.api').IAccessTokenResult>;
+export type RefreshTokenDto = DeepRequired<import('./client/client.api').IRefreshTokenDto>;
+export type UserDto = DeepRequired<import('./client/client.api').IUserDto>;
+export type UserSummaryDto = DeepRequired<import('./client/client.api').IUserSummaryDto>;
+export type CommunitySummaryDto = DeepRequired<import('./client/client.api').ICommunitySummaryDto>;
+export type CommunityListItemDto = DeepRequired<import('./client/client.api').ICommunityListItemDto>;
+export type CommunityDetailsDto = DeepRequired<import('./client/client.api').ICommunityDetailsDto>;
+export type MembershipListItemDto = DeepRequired<import('./client/client.api').IMembershipListItemDto>;
+export type MembershipDetailsDto = DeepRequired<import('./client/client.api').IMembershipDetailsDto>;
+export type ItemListItemDto = DeepRequired<import('./client/client.api').IItemListItemDto>;
+export type ItemDetailsDto = DeepRequired<import('./client/client.api').IItemDetailsDto>;
+export type RequestListItemDto = DeepRequired<import('./client/client.api').IRequestListItemDto>;
+export type RequestDetailsDto = DeepRequired<import('./client/client.api').IRequestDetailsDto>;
+export type OfferListItemDto = DeepRequired<import('./client/client.api').IOfferListItemDto>;
+export type OfferDetailsDto = DeepRequired<import('./client/client.api').IOfferDetailsDto>;
+export type OfferStatusResponseDto = DeepRequired<import('./client/client.api').IOfferStatusResponseDto>;
+export type LoanListItemDto = DeepRequired<import('./client/client.api').ILoanListItemDto>;
+export type LoanDetailsDto = DeepRequired<import('./client/client.api').ILoanDetailsDto>;
+export type EventListItemDto = DeepRequired<import('./client/client.api').IEventListItemDto>;
+export type EventDetailsDto = DeepRequired<import('./client/client.api').IEventDetailsDto>;
+export type InviteCodeResponseDto = DeepRequired<import('./client/client.api').IInviteCodeResponseDto>;
+export type InviteLinkResponseDto = DeepRequired<import('./client/client.api').IInviteLinkResponseDto>;
+export type ReputationDetailsDto = DeepRequired<import('./client/client.api').IReputationDetailsDto>;
+export type ReputationWeightsDto = DeepRequired<import('./client/client.api').IReputationWeightsDto>;
+export type ItemListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IItemListItemDtoPagedResponseDto>;
+export type OfferListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IOfferListItemDtoPagedResponseDto>;
+export type RequestListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IRequestListItemDtoPagedResponseDto>;
 
-export type PagedResponseDto<T> = {
-  items: T[];
-  page: number;
-  pageSize: number;
-  total: number;
-};
-
-export type CommunityListItemDto = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  createdByUserId: string;
-  createdAt: string;
-};
-
-export type CommunityDetailsDto = CommunityListItemDto;
-
-export type MembershipListItemDto = {
-  id: string;
-  userId: string;
-  communityId: string;
-  role: MembershipRole;
-  status: MembershipStatus;
-  invitedByUserId: string | null;
-  createdAt: string;
-  joinedAt: string | null;
-};
-
-export type MembershipDetailsDto = MembershipListItemDto;
-
-export type ItemListItemDto = {
-  id: string;
-  communityId: string;
-  owner: UserSummaryDto;
-  name: string;
-  description: string;
-  category: string;
-  status: ItemStatus;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type ItemDetailsDto = ItemListItemDto;
-
-export type RequestListItemDto = {
-  id: string;
-  communityId: string;
-  owner: UserSummaryDto;
-  community: CommunitySummaryDto;
-  title: string;
-  description: string;
-  status: RequestStatus;
-  createdAt: string;
-  neededFrom: string | null;
-  neededTo: string | null;
-};
-
-export type RequestDetailsDto = RequestListItemDto;
-
-export type OfferListItemDto = {
-  id: string;
-  communityId: string;
-  offerer: UserSummaryDto;
-  community: CommunitySummaryDto;
-  requestId: string;
-  itemId: string | null;
-  message: string;
-  status: OfferStatus;
-  createdAt: string;
-};
-
-export type OfferDetailsDto = OfferListItemDto;
-
-export type LoanListItemDto = {
-  id: string;
-  communityId: string;
-  itemId: string;
-  lenderUserId: string;
-  borrowerUserId: string;
-  requestId: string | null;
-  offerId: string | null;
-  status: LoanStatus;
-  startAt: string | null;
-  dueAt: string | null;
-  returnedAt: string | null;
-};
-
-export type LoanDetailsDto = LoanListItemDto;
-
-export type EventListItemDto = {
-  id: string;
-  communityId: string;
-  actorUserId: string;
-  entityType: string;
-  entityId: string;
-  action: string;
-  payload: string;
-  createdAt: string;
-};
-
-export type EventDetailsDto = EventListItemDto;
-
-export type InviteCodeResponseDto = {
-  enterCode: string;
-  expiresAt: string;
-};
-
-export type InviteLinkResponseDto = {
-  url: string;
-  expiresAt: string;
-};
-
-export type OfferStatusResponseDto = {
-  id: string;
-  status: OfferStatus;
-};
-
-export type ReputationDetailsDto = {
-  communityId: string;
-  userId: string;
-  score: number;
-  lendCount: number;
-  returnCount: number;
-  onTimeReturnCount: number;
-  weights: {
-    lendPoints: number;
-    returnPoints: number;
-    onTimeReturnBonus: number;
-  };
-};
-
-export type CreateCommunityRequestDto = {
-  name: string;
-  slug: string;
-  description: string;
-};
-
-export type UpdateCommunityRequestDto = Partial<Pick<CreateCommunityRequestDto, 'name' | 'slug' | 'description'>>;
-
-export type CreateMembershipRequestDto = {
-  communityId: string;
-  enterCode: string;
-};
-
-export type UpdateMembershipRequestDto = Partial<Pick<MembershipDetailsDto, 'role' | 'status'>>;
-
-export type UpdateMembershipRoleRequestDto = {
-  role: MembershipRole;
-};
-
-export type CreateItemRequestDto = {
-  communityId: string;
-  name: string;
-  description: string;
-  category: string;
-  status: ItemStatus;
-};
-
-export type UpdateItemRequestDto = Partial<Pick<CreateItemRequestDto, 'name' | 'description' | 'category' | 'status'>>;
-
-export type CreateRequestRequestDto = {
-  communityId: string;
-  title: string;
-  description: string;
-  status: RequestStatus;
-  neededFrom: string | null;
-  neededTo: string | null;
-};
-
-export type UpdateRequestRequestDto = Partial<Pick<CreateRequestRequestDto, 'title' | 'description' | 'status' | 'neededFrom' | 'neededTo'>>;
-
-export type CreateOfferRequestDto = {
-  communityId: string;
-  requestId: string;
-  itemId: string | null;
-  message: string;
-  status: OfferStatus;
-};
-
-export type UpdateOfferRequestDto = Partial<Pick<CreateOfferRequestDto, 'itemId' | 'message' | 'status'>>;
-
-export type CreateLoanRequestDto = {
-  communityId: string;
-  itemId: string;
-  lenderUserId: string;
-  borrowerUserId: string;
-  requestId: string | null;
-  offerId: string | null;
-  status: LoanStatus;
-  startAt: string | null;
-  dueAt: string | null;
-};
-
-export type UpdateLoanRequestDto = Partial<Pick<CreateLoanRequestDto, 'status' | 'startAt' | 'dueAt'>>;
-
-export type CreateEventRequestDto = Omit<EventListItemDto, 'id' | 'createdAt'>;
-export type UpdateEventRequestDto = Partial<CreateEventRequestDto>;
-
-export type LoginRequestDto = {
-  username: string;
-  password: string;
-};
-
-export type RegisterRequestDto = {
-  username: string;
-  email: string;
-  password: string;
-  name: string;
-  lastName: string;
-};
-
-export type RecoveryRequestDto = {
-  email: string;
-};
-
-export type ResetRequestDto = {
-  token: string;
-  password: string;
-};
-
-export type VerifyResendRequestDto = {
-  email: string;
-};
-
-export type RefreshRequestDto = {
-  refreshToken: string;
-};
-
-export type AcceptOfferRequestDto = {
-  borrowerUserId: string;
-};
-
-export type JoinCommunityRequestDto = {
-  enterCode: string;
-};
+export type CreateCommunityRequestDto = import('./client/client.api').ICreateCommunityRequestDto;
+export type UpdateCommunityRequestDto = import('./client/client.api').IUpdateCommunityRequestDto;
+export type JoinCommunityRequestDto = import('./client/client.api').IJoinCommunityRequestDto;
+export type CreateMembershipRequestDto = import('./client/client.api').ICreateMembershipRequestDto;
+export type UpdateMembershipRequestDto = import('./client/client.api').IUpdateMembershipRequestDto;
+export type UpdateMembershipRoleRequestDto = import('./client/client.api').IUpdateMembershipRoleRequestDto;
+export type CreateItemRequestDto = import('./client/client.api').ICreateItemRequestDto;
+export type UpdateItemRequestDto = import('./client/client.api').IUpdateItemRequestDto;
+export type CreateRequestRequestDto = import('./client/client.api').ICreateRequestRequestDto;
+export type UpdateRequestRequestDto = import('./client/client.api').IUpdateRequestRequestDto;
+export type CreateOfferRequestDto = import('./client/client.api').ICreateOfferRequestDto;
+export type UpdateOfferRequestDto = import('./client/client.api').IUpdateOfferRequestDto;
+export type AcceptOfferRequestDto = import('./client/client.api').IAcceptOfferRequestDto;
+export type CreateLoanRequestDto = import('./client/client.api').ICreateLoanRequestDto;
+export type UpdateLoanRequestDto = import('./client/client.api').IUpdateLoanRequestDto;
+export type CreateEventRequestDto = import('./client/client.api').ICreateEventRequestDto;
+export type UpdateEventRequestDto = import('./client/client.api').IUpdateEventRequestDto;
+export type LoginRequestDto = import('./client/client.api').ILoginRequest;
+export type RegisterRequestDto = import('./client/client.api').IRegisterRequest;
+export type RecoveryRequestDto = import('./client/client.api').IRecoveryRequest;
+export type ResetRequestDto = import('./client/client.api').IResetPasswordDto;
+export type VerifyResendRequestDto = import('./client/client.api').IResendVerificationRequest;
+export type RefreshRequestDto = import('./client/client.api').IRefreshTokenRequest;

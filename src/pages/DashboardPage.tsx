@@ -2,7 +2,7 @@ import React from 'react';
 import ApiErrorBanner from '../components/ApiErrorBanner';
 import { getCommunityAvailableItems, getCommunityRequestsFeed } from '../api/communities';
 import { listMyRequests } from '../api/requests';
-import { ItemListItemDto, PagedResponseDto, RequestListItemDto } from '../api/types';
+import { ItemListItemDtoPagedResponseDto, RequestListItemDtoPagedResponseDto } from '../api/types';
 import { useSession } from '../state/session';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
@@ -12,9 +12,9 @@ import { Link } from 'react-router-dom';
 
 const DashboardPage: React.FC = () => {
     const { activeCommunityId } = useSession();
-    const [feed, setFeed] = React.useState<PagedResponseDto<RequestListItemDto> | null>(null);
-    const [items, setItems] = React.useState<PagedResponseDto<ItemListItemDto> | null>(null);
-    const [myRequests, setMyRequests] = React.useState<PagedResponseDto<RequestListItemDto> | null>(null);
+    const [feed, setFeed] = React.useState<RequestListItemDtoPagedResponseDto | null>(null);
+    const [items, setItems] = React.useState<ItemListItemDtoPagedResponseDto | null>(null);
+    const [myRequests, setMyRequests] = React.useState<RequestListItemDtoPagedResponseDto | null>(null);
     const [error, setError] = React.useState<unknown>(null);
     const [loading, setLoading] = React.useState(false);
 
@@ -24,7 +24,7 @@ const DashboardPage: React.FC = () => {
         setLoading(true);
         try {
             const [feedData, itemsData, myRequestsData] = await Promise.all([
-                getCommunityRequestsFeed(activeCommunityId, { status: 'Open', page: 1, pageSize: 10 }),
+                getCommunityRequestsFeed(activeCommunityId, { status: 'Open', page: 1, pageSize: 10, excludingMine: true }),
                 getCommunityAvailableItems(activeCommunityId, { page: 1, pageSize: 10 }),
                 listMyRequests({ communityId: activeCommunityId, page: 1, pageSize: 10 }),
             ]);

@@ -36,11 +36,25 @@ const getUserIdFromToken = (token: string) => {
   return null;
 };
 
+const getUserNameFromToken = (token: string) => {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+  const keys = ['unique_name', 'preferred_username', 'username', 'name'];
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+  }
+  return null;
+};
+
 type SessionContextValue = {
   activeCommunityId: string | null;
   activeCommunityName: string | null;
   setActiveCommunity: (id: string | null, name?: string | null) => void;
   userId: string | null;
+  userName: string | null;
 };
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
@@ -54,6 +68,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     () => localStorage.getItem(COMMUNITY_NAME_KEY)
   );
   const [userId, setUserIdState] = useState<string | null>(() => (token ? getUserIdFromToken(token) : null));
+  const [userName, setUserNameState] = useState<string | null>(() => (token ? getUserNameFromToken(token) : null));
 
   const setActiveCommunity = React.useCallback((id: string | null, name?: string | null) => {
     setActiveCommunityIdState(id);
@@ -74,6 +89,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   React.useEffect(() => {
     setUserIdState(token ? getUserIdFromToken(token) : null);
+    setUserNameState(token ? getUserNameFromToken(token) : null);
   }, [token]);
 
   React.useEffect(() => {
@@ -125,8 +141,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       activeCommunityName,
       setActiveCommunity,
       userId,
+      userName,
     }),
-    [activeCommunityId, activeCommunityName, setActiveCommunity, userId]
+    [activeCommunityId, activeCommunityName, setActiveCommunity, userId, userName]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

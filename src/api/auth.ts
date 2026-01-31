@@ -1,4 +1,4 @@
-import { api } from './client';
+import { apiClient } from './client';
 import {
   LoginRequestDto,
   RegisterRequestDto,
@@ -24,9 +24,6 @@ const readTokenValue = (value: unknown): string | null => {
 };
 
 const extractTokens = (response: unknown): AuthTokens => {
-  if (typeof response === 'string') {
-    return { accessToken: response, refreshToken: null };
-  }
   if (!response || typeof response !== 'object') {
     throw new Error('Invalid token response.');
   }
@@ -38,38 +35,38 @@ const extractTokens = (response: unknown): AuthTokens => {
     throw new Error('Invalid token response.');
   }
   const refreshToken =
-    readTokenValue(data.refreshToken ?? data.RefreshToken) ??
-    readTokenValue(data.newRefreshToken ?? data.NewRefreshToken);
+    readTokenValue(data.newRefreshToken ?? data.NewRefreshToken) ??
+    readTokenValue(data.refreshToken ?? data.RefreshToken);
 
   return { accessToken, refreshToken };
 };
 
 export const login = async (payload: LoginRequestDto) => {
-  const response = await api.post<unknown>('/api/auth/login', payload, false);
+  const response = await apiClient.login(payload as any);
   return extractTokens(response);
 };
 
 export const register = async (payload: RegisterRequestDto) => {
-  await api.post('/api/auth/register', payload, false);
+  await apiClient.register(payload as any);
 };
 
 export const recovery = async (payload: RecoveryRequestDto) => {
-  await api.post('/api/auth/recovery', payload, false);
+  await apiClient.recovery(payload as any);
 };
 
 export const resetPassword = async (payload: ResetRequestDto) => {
-  await api.post('/api/auth/reset', payload, false);
+  await apiClient.reset(payload as any);
 };
 
 export const verify = async (token: string) => {
-  await api.get(`/api/auth/verify`, { token }, false);
+  await apiClient.verify(token);
 };
 
 export const resendVerification = async (payload: VerifyResendRequestDto) => {
-  await api.post('/api/auth/verify/resend', payload, false);
+  await apiClient.resend(payload as any);
 };
 
 export const refreshToken = async (payload: RefreshRequestDto) => {
-  const response = await api.post<unknown>('/api/auth/refresh', payload, false);
+  const response = await apiClient.refresh(payload as any);
   return extractTokens(response);
 };

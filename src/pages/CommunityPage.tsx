@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import ApiErrorBanner from '../components/ApiErrorBanner';
 import {
   createCommunity,
@@ -8,7 +9,7 @@ import {
   listCommunities,
   rotateInviteCode,
 } from '../api/communities';
-import { listMemberships } from '../api/memberships';
+import { listMyMemberships } from '../api/memberships';
 import { CommunityListItemDto, InviteCodeResponseDto, InviteLinkResponseDto, MembershipListItemDto } from '../api/types';
 import { useSession } from '../state/session';
 import { Button } from '../components/ui/Button';
@@ -19,6 +20,7 @@ import { PlusIcon, SearchIcon, UsersIcon } from '../components/ui/Icons';
 
 const CommunityPage: React.FC = () => {
   const { activeCommunityId, setActiveCommunity, userId } = useSession();
+  const navigate = useNavigate();
   const [memberships, setMemberships] = React.useState<MembershipListItemDto[]>([]);
   const [communities, setCommunities] = React.useState<CommunityListItemDto[]>([]);
   const [invite, setInvite] = React.useState<InviteCodeResponseDto | null>(null);
@@ -37,7 +39,7 @@ const CommunityPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      const [membershipsData, communitiesData] = await Promise.all([listMemberships(), listCommunities()]);
+      const [membershipsData, communitiesData] = await Promise.all([listMyMemberships(), listCommunities()]);
       setMemberships(membershipsData);
       setCommunities(communitiesData);
     } catch (err) {
@@ -45,7 +47,7 @@ const CommunityPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   React.useEffect(() => {
     loadData();
@@ -160,8 +162,8 @@ const CommunityPage: React.FC = () => {
                   onClick={() => setActiveCommunity(membership.communityId, community?.name || membership.communityId)}
                   className={`border-2 transition-all ${isActive ? 'border-primary-500 bg-primary-50/50' : 'border-transparent hover:border-slate-200'}`}
                 >
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div>
+                  <CardContent className="flex items-center justify-between gap-3 p-4">
+                    <div className="flex-1">
                       <h3 className="font-bold text-slate-900">{community?.name || 'Community Sconosciuta'}</h3>
                       <p className="text-sm text-slate-500">{community?.description || 'Nessuna descrizione'}</p>
                       <div className="flex gap-2 mt-2">
@@ -169,9 +171,18 @@ const CommunityPage: React.FC = () => {
                         {isActive && <Badge variant="success">Attiva</Badge>}
                       </div>
                     </div>
-                    {isActive && (
-                      <div className="w-4 h-4 rounded-full bg-primary-500 shadow-sm ring-4 ring-primary-100"></div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/community/${membership.communityId}/members`);
+                        }}
+                      >
+                        Mostra membri
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );

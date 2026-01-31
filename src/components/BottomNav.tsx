@@ -4,7 +4,7 @@ import { HomeIcon, UsersIcon, HandHeartIcon, UserIcon, PackageIcon } from './ui/
 
 export const BottomNav: React.FC = () => {
     const navItems = [
-        { to: '/', icon: <HomeIcon className="w-6 h-6" />, label: 'Home' },
+        { to: '/dashboard', icon: <HomeIcon className="w-6 h-6" />, label: 'Home' },
         { to: '/community', icon: <UsersIcon className="w-6 h-6" />, label: 'Community' },
         { to: '/requests', icon: <HandHeartIcon className="w-6 h-6" />, label: 'Richieste' },
         // Adding Items as a distinct tab as per UI reference potential

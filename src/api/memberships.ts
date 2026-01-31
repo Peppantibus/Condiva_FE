@@ -1,28 +1,23 @@
-import { api } from './client';
-import {
-  CommunityListItemDto,
-  CreateMembershipRequestDto,
-  MembershipDetailsDto,
-  MembershipListItemDto,
-  UpdateMembershipRequestDto,
-  UpdateMembershipRoleRequestDto,
-} from './types';
+import { apiClient } from './client';
+import { CreateMembershipRequestDto, UpdateMembershipRequestDto, UpdateMembershipRoleRequestDto } from './types';
 
-export const listMemberships = () => api.get<MembershipListItemDto[]>('/api/memberships');
+export const listMemberships = () => apiClient.membershipsAll();
 
-export const listMyCommunities = () => api.get<CommunityListItemDto[]>('/api/memberships/me/communities');
+export const listMyMemberships = () => apiClient.meAll();
 
-export const getMembership = (id: string) => api.get<MembershipDetailsDto>(`/api/memberships/${id}`);
+export const listMyCommunities = () => apiClient.communitiesAll2();
+
+export const getMembership = (id: string) => apiClient.membershipsGET(id);
 
 export const createMembership = (payload: CreateMembershipRequestDto) =>
-  api.post<MembershipDetailsDto>('/api/memberships', payload);
+  apiClient.membershipsPOST(payload as any);
 
 export const updateMembership = (id: string, payload: UpdateMembershipRequestDto) =>
-  api.put<MembershipDetailsDto>(`/api/memberships/${id}`, payload);
+  apiClient.membershipsPUT(id, payload as any);
 
 export const updateMembershipRole = (id: string, payload: UpdateMembershipRoleRequestDto) =>
-  api.post<MembershipDetailsDto>(`/api/memberships/${id}/role`, payload);
+  apiClient.role(id, payload as any);
 
-export const deleteMembership = (id: string) => api.del<void>(`/api/memberships/${id}`);
+export const deleteMembership = (id: string) => apiClient.membershipsDELETE(id);
 
-export const leaveCommunity = (communityId: string) => api.post<void>(`/api/memberships/leave/${communityId}`);
+export const leaveCommunity = (communityId: string) => apiClient.leave(communityId);

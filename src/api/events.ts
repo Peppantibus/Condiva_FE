@@ -1,13 +1,14 @@
-import { api } from './client';
-import { CreateEventRequestDto, EventDetailsDto, EventListItemDto, UpdateEventRequestDto } from './types';
+import { apiClient } from './client';
+import { CreateEventRequestDto, UpdateEventRequestDto } from './types';
 
-export const listEvents = () => api.get<EventListItemDto[]>('/api/events');
+export const listEvents = () => apiClient.eventsAll();
 
-export const getEvent = (id: string) => api.get<EventDetailsDto>(`/api/events/${id}`);
+export const getEvent = (id: string) => apiClient.eventsGET(id);
 
-export const createEvent = (payload: CreateEventRequestDto) => api.post<EventDetailsDto>('/api/events', payload);
+export const createEvent = (payload: CreateEventRequestDto) =>
+  apiClient.eventsPOST(payload as any);
 
 export const updateEvent = (id: string, payload: UpdateEventRequestDto) =>
-  api.put<EventDetailsDto>(`/api/events/${id}`, payload);
+  apiClient.eventsPUT(id, payload as any);
 
-export const deleteEvent = (id: string) => api.del<void>(`/api/events/${id}`);
+export const deleteEvent = (id: string) => apiClient.eventsDELETE(id);

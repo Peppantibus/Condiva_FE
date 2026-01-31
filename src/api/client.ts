@@ -1,26 +1,6 @@
-export type ApiErrorPayload = {
-  error?: string | { code?: string; message?: string };
-  code?: string;
-  field?: string;
-  entity?: string;
-};
+import { ApiClient } from './client/client.api';
 
-export class ApiError extends Error {
-  status: number;
-  code?: string;
-  field?: string;
-  entity?: string;
-
-  constructor(status: number, message: string, payload?: ApiErrorPayload) {
-    super(message);
-    this.status = status;
-    this.code = payload?.code;
-    this.field = payload?.field;
-    this.entity = payload?.entity;
-  }
-}
-
-type AuthTokens = {
+export type AuthTokens = {
   accessToken: string;
   refreshToken?: string | null;
 };
@@ -43,98 +23,60 @@ const getBaseUrl = () => {
   return envUrl && envUrl.trim().length > 0 ? envUrl : 'https://<host>';
 };
 
-const buildQuery = (query?: Record<string, string | number | boolean | null | undefined>) => {
-  if (!query) return '';
-  const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, value]) => {
-    if (value === null || value === undefined || value === '') return;
-    params.set(key, String(value));
-  });
-  const qs = params.toString();
-  return qs.length > 0 ? `?${qs}` : '';
-};
-
-const parseResponse = async (response: Response) => {
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    return response.json();
+const getPathname = (input: RequestInfo) => {
+  const rawUrl = typeof input === 'string' ? input : input.url;
+  try {
+    return new URL(rawUrl, getBaseUrl()).pathname;
+  } catch {
+    return rawUrl;
   }
-  return response.text();
 };
 
-type RequestOptions = {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: unknown;
-  query?: Record<string, string | number | boolean | null | undefined>;
-  auth?: boolean;
-  retried?: boolean;
-};
+const isPublicEndpoint = (pathname: string) => pathname.startsWith('/api/auth');
 
-export const request = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}${path}${buildQuery(options.query)}`;
-  const headers: Record<string, string> = {};
+let refreshPromise: Promise<AuthTokens | null> | null = null;
 
-  let body: BodyInit | undefined;
-  if (options.body !== undefined) {
-    headers['Content-Type'] = 'application/json';
-    body = JSON.stringify(options.body);
-  }
+type RetryableRequestInit = RequestInit & { __retried?: boolean };
 
+const fetchWithAuth = async (input: RequestInfo, init?: RequestInit): Promise<Response> => {
+  const pathname = getPathname(input);
+  const isPublic = isPublicEndpoint(pathname);
+
+  const headers = new Headers(init?.headers ?? {});
   const token = authHandlers?.getAccessToken();
-  if (options.auth !== false && token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (!isPublic && token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(url, {
-    method: options.method || 'GET',
+  const response = await fetch(input, {
+    ...init,
     headers,
-    body,
   });
 
-  if (response.status === 401 && options.auth !== false && !options.retried) {
+  const alreadyRetried = (init as RetryableRequestInit | undefined)?.__retried ?? false;
+  if (!isPublic && !alreadyRetried && (response.status === 401 || response.status === 403)) {
     if (authHandlers?.refreshTokens) {
-      const tokens = await authHandlers.refreshTokens();
+      if (!refreshPromise) {
+        refreshPromise = authHandlers.refreshTokens().finally(() => {
+          refreshPromise = null;
+        });
+      }
+      const tokens = await refreshPromise;
       if (tokens?.accessToken) {
         authHandlers.setTokens(tokens);
-        return request<T>(path, { ...options, retried: true });
+        const retryHeaders = new Headers(init?.headers ?? {});
+        retryHeaders.set('Authorization', `Bearer ${tokens.accessToken}`);
+        return fetch(input, {
+          ...init,
+          headers: retryHeaders,
+          __retried: true,
+        } as RetryableRequestInit);
       }
     }
     authHandlers?.onUnauthorized?.();
   }
 
-  if (!response.ok) {
-    const payload = (await parseResponse(response)) as ApiErrorPayload;
-    let message: string;
-    let code: string | undefined;
-
-    if (payload?.error && typeof payload.error === 'object') {
-      // New envelope format: { error: { code: "...", message: "..." } }
-      message = payload.error.message || response.statusText || 'Request failed.';
-      code = payload.error.code;
-    } else {
-      // Old format or simple string error
-      message = (typeof payload?.error === 'string' ? payload.error : null) || response.statusText || 'Request failed.';
-      code = payload?.code;
-    }
-
-    throw new ApiError(response.status, message, { ...payload, code });
-  }
-
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return (await parseResponse(response)) as T;
+  return response;
 };
 
-export const api = {
-  get: <T>(path: string, query?: RequestOptions['query'], auth = true) =>
-    request<T>(path, { method: 'GET', query, auth }),
-  post: <T>(path: string, body?: unknown, auth = true) =>
-    request<T>(path, { method: 'POST', body, auth }),
-  put: <T>(path: string, body?: unknown, auth = true) =>
-    request<T>(path, { method: 'PUT', body, auth }),
-  del: <T>(path: string, auth = true) =>
-    request<T>(path, { method: 'DELETE', auth }),
-};
+export const apiClient = new ApiClient(getBaseUrl(), { fetch: fetchWithAuth });

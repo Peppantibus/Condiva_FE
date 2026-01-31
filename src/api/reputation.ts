@@ -1,8 +1,7 @@
-import { api } from './client';
-import { ReputationDetailsDto } from './types';
+import { apiClient } from './client';
 
 export const getMyReputation = (communityId: string) =>
-  api.get<ReputationDetailsDto>(`/api/reputation/${communityId}/me`);
+  apiClient.me2(communityId);
 
 export const getUserReputation = (communityId: string, userId: string) =>
-  api.get<ReputationDetailsDto>(`/api/reputation/${communityId}/users/${userId}`);
+  apiClient.users(communityId, userId);

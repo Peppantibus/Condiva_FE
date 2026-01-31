@@ -12,7 +12,7 @@ import { UserIcon } from '../components/ui/Icons';
 import { Link } from 'react-router-dom';
 
 const MePage: React.FC = () => {
-  const { activeCommunityId, userId } = useSession(); // Accessing userId explicitly if needed for display
+  const { activeCommunityId, userId, userName } = useSession(); // Accessing userId explicitly if needed for display
   const [reputation, setReputation] = React.useState<ReputationDetailsDto | null>(null);
   const [offers, setOffers] = React.useState<OfferListItemDto[]>([]);
   const [loans, setLoans] = React.useState<LoanListItemDto[]>([]);
@@ -66,7 +66,7 @@ const MePage: React.FC = () => {
             <UserIcon className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold">Il mio Profilo</h2>
+            <h2 className="text-xl font-bold">{userName ? `@${userName}` : 'Il mio Profilo'}</h2>
             <p className="text-primary-100 text-sm">Community Member</p>
             {reputation && (
               <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-medium backdrop-blur-md">

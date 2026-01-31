@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ApiErrorBanner from '../components/ApiErrorBanner';
 import { getCommunityRequestsFeed } from '../api/communities';
 import { createRequest, deleteRequest, listMyRequests } from '../api/requests';
-import { PagedResponseDto, RequestListItemDto } from '../api/types';
+import { RequestListItemDtoPagedResponseDto } from '../api/types';
 import { useSession } from '../state/session';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -13,8 +13,8 @@ import { HandHeartIcon, PlusIcon } from '../components/ui/Icons';
 
 const RequestsPage: React.FC = () => {
   const { activeCommunityId, userId } = useSession();
-  const [feed, setFeed] = React.useState<PagedResponseDto<RequestListItemDto> | null>(null);
-  const [myRequests, setMyRequests] = React.useState<PagedResponseDto<RequestListItemDto> | null>(null);
+  const [feed, setFeed] = React.useState<RequestListItemDtoPagedResponseDto | null>(null);
+  const [myRequests, setMyRequests] = React.useState<RequestListItemDtoPagedResponseDto | null>(null);
   const [error, setError] = React.useState<unknown>(null);
   const [loading, setLoading] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'feed' | 'create' | 'mine'>('feed');
@@ -33,7 +33,7 @@ const RequestsPage: React.FC = () => {
     setLoading(true);
     try {
       const [feedData, myData] = await Promise.all([
-        getCommunityRequestsFeed(activeCommunityId, { status: 'Open', page: 1, pageSize: 20 }),
+        getCommunityRequestsFeed(activeCommunityId, { status: 'Open', page: 1, pageSize: 20, excludingMine: true }),
         listMyRequests({ communityId: activeCommunityId, page: 1, pageSize: 20 }),
       ]);
       setFeed(feedData);
