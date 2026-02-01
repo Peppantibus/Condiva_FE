@@ -137,21 +137,45 @@ const RequestsPage: React.FC = () => {
 
           {feed?.items?.length ? (
             feed.items.map((request) => (
-              <Card key={request.id} className="border-transparent shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-slate-900">{request.title}</h3>
-                    <Badge variant="purple">{request.status}</Badge>
+              <Card key={request.id} className="border-transparent shadow-sm overflow-hidden group hover:shadow-md transition-all duration-200">
+                <div className="flex items-stretch min-h-[7rem]">
+                  {/* Image Placeholder - Left Side */}
+                  <div className="w-28 bg-slate-100 flex items-center justify-center shrink-0">
+                    <HandHeartIcon className="w-8 h-8 text-slate-300 opacity-50" />
                   </div>
-                  <p className="text-sm text-slate-600 mb-2">{request.description}</p>
-                  <div className="text-xs text-slate-400 mb-3">
-                    <div>Da: {request.owner.displayName || request.owner.userName || request.owner.id}</div>
-                    <div>Community: {request.community.name}</div>
+
+                  {/* Content - Middle */}
+                  <CardContent className="flex-1 p-4 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                          {request.title}
+                        </h3>
+                        <Badge variant="purple" className="shrink-0 ml-2">{request.status}</Badge>
+                      </div>
+                      <p className="text-sm text-slate-600 line-clamp-2 mt-1 mb-2">
+                        {request.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <span className="font-medium text-slate-500">
+                        {request.owner.displayName || request.owner.userName || request.owner.id}
+                      </span>
+                      <span>•</span>
+                      <span>{request.community.name}</span>
+                    </div>
+                  </CardContent>
+
+                  {/* Actions - Right Side */}
+                  <div className="flex items-center px-4 border-l border-slate-50">
+                    <Link to={`/requests/${request.id}`}>
+                      <Button variant="ghost" size="sm" className="font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50">
+                        Dettaglio
+                      </Button>
+                    </Link>
                   </div>
-                  <Link to={`/requests/${request.id}`}>
-                    <Button variant="outline" size="sm" fullWidth>Dettaglio</Button>
-                  </Link>
-                </CardContent>
+                </div>
               </Card>
             ))
           ) : (
@@ -167,24 +191,35 @@ const RequestsPage: React.FC = () => {
           <h2 className="font-bold">Le tue richieste</h2>
           {myRequests?.items?.length ? (
             myRequests.items.map((request) => (
-              <Card key={request.id}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-slate-900">{request.title}</h3>
-                    <Badge variant={request.status === 'Open' ? 'purple' : 'default'}>{request.status}</Badge>
+              <Card key={request.id} className="overflow-hidden group hover:shadow-md transition-all duration-200">
+                <div className="flex h-20 items-stretch">
+                  <div className="w-20 bg-slate-100 flex items-center justify-center shrink-0">
+                    <HandHeartIcon className="w-8 h-8 text-slate-300 opacity-50" />
                   </div>
-                  <div className="text-xs text-slate-400 mb-3">
-                    Community: {request.community.name}
-                  </div>
-                  <div className="flex gap-2 mt-4 justify-end">
-                    <Link to={`/requests/${request.id}`}>
-                      <Button variant="outline" size="sm">Vedi</Button>
-                    </Link>
-                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(request.id)}>
-                      Elimina
-                    </Button>
-                  </div>
-                </CardContent>
+                  <CardContent className="flex-1 flex items-center justify-between px-6 py-0">
+                    <div className="flex items-center gap-4">
+                      <h3 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                        {request.title}
+                      </h3>
+                      <Badge variant={request.status === 'Open' ? 'purple' : 'default'} className="hidden sm:inline-flex">
+                        {request.status}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {/* Mobile Badge fallback if needed, but keeping clean for desktop */}
+                      <Link to={`/requests/${request.id}`}>
+                        <Button variant="ghost" size="sm" className="font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50">
+                          Vedi
+                        </Button>
+                      </Link>
+                      <div className="h-4 w-px bg-slate-200"></div>
+                      <Button variant="ghost" size="sm" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(request.id)}>
+                        Elimina
+                      </Button>
+                    </div>
+                  </CardContent>
+                </div>
               </Card>
             ))
           ) : (

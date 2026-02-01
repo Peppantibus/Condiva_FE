@@ -1,22 +1,22 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import ApiErrorBanner from '../components/ApiErrorBanner';
 import { getRequest, getRequestOffers } from '../api/requests';
-import { acceptOffer, createOffer, rejectOffer, withdrawOffer } from '../api/offers';
+import { acceptOffer, rejectOffer, withdrawOffer } from '../api/offers';
 import { OfferListItemDto, RequestDetailsDto } from '../api/types';
 import { useSession } from '../state/session';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Card, CardContent } from '../components/ui/Card';
+import { HandHeartIcon } from '../components/ui/Icons';
 
 const RequestDetailsPage: React.FC = () => {
   const { id } = useParams();
-  const { activeCommunityId, userId } = useSession();
+  const { userId } = useSession();
   const [request, setRequest] = React.useState<RequestDetailsDto | null>(null);
   const [offers, setOffers] = React.useState<OfferListItemDto[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<unknown>(null);
-  const canCreate = Boolean(activeCommunityId && userId);
-
-  const [offerForm, setOfferForm] = React.useState({ message: '', itemId: '' });
-  const [borrowerUserId, setBorrowerUserId] = React.useState('');
 
   const loadDetails = React.useCallback(async () => {
     if (!id) return;
@@ -40,34 +40,13 @@ const RequestDetailsPage: React.FC = () => {
     loadDetails();
   }, [loadDetails]);
 
-  const handleCreateOffer = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!id || !activeCommunityId || !userId) return;
-    setError(null);
-    setLoading(true);
-    try {
-      await createOffer({
-        communityId: activeCommunityId,
-        requestId: id,
-        itemId: offerForm.itemId || null,
-        message: offerForm.message,
-        status: 'Open',
-      });
-      setOfferForm({ message: '', itemId: '' });
-      await loadDetails();
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAccept = async (offerId: string) => {
-    if (!borrowerUserId) return;
+    const borrowerId = request?.requesterUserId || request?.owner?.id;
+    if (!borrowerId) return;
     setError(null);
     setLoading(true);
     try {
-      await acceptOffer(offerId, { borrowerUserId });
+      await acceptOffer(offerId, { borrowerUserId: borrowerId });
       await loadDetails();
     } catch (err) {
       setError(err);
@@ -106,75 +85,131 @@ const RequestDetailsPage: React.FC = () => {
     return <div className="text-sm">Request non trovata.</div>;
   }
 
+  const requesterName = request?.owner?.displayName || request?.owner?.userName || request?.owner?.id;
+  const requesterId = request?.requesterUserId || request?.owner?.id;
+  const isRequester = Boolean(userId && requesterId && userId === requesterId);
+  const isRequestOpen = request?.status === 'Open';
+  const formattedNeededFrom = request?.neededFrom ? new Date(request.neededFrom).toLocaleDateString() : null;
+  const formattedNeededTo = request?.neededTo ? new Date(request.neededTo).toLocaleDateString() : null;
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Dettaglio richiesta</h1>
-        <p className="text-sm">Gestione offerte e stato.</p>
+    <div className="space-y-6 pb-20">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Dettaglio richiesta</h1>
+          <p className="text-sm text-slate-500">Offri un oggetto o gestisci le offerte ricevute.</p>
+        </div>
+        {!isRequester && isRequestOpen && (
+          <Link to={`/requests/${id}/offer`}>
+            <Button size="sm" icon={<HandHeartIcon className="w-4 h-4" />}>Fai un'offerta</Button>
+          </Link>
+        )}
       </div>
       <ApiErrorBanner error={error} />
       {request && (
-        <section className="space-y-2">
-          <h2 className="font-semibold">Richiesta</h2>
-          <div className="border px-3 py-2 text-sm">
-            <div className="font-medium">{request.title}</div>
-            <div>{request.description}</div>
-            <div>Status: {request.status}</div>
-          </div>
-        </section>
-      )}
-      <section className="space-y-3">
-        <h2 className="font-semibold">Crea offerta</h2>
-        {!activeCommunityId && <div className="text-sm">Seleziona una community attiva per creare un'offerta.</div>}
-        {activeCommunityId && !userId && (
-          <div className="text-sm">Sessione utente non disponibile. Effettua nuovamente l'accesso.</div>
-        )}
-        <form onSubmit={handleCreateOffer} className="space-y-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-sm">Messaggio</span>
-            <input value={offerForm.message} onChange={(event) => setOfferForm((prev) => ({ ...prev, message: event.target.value }))} className="border px-2 py-1" required />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-sm">ItemId (opzionale)</span>
-            <input value={offerForm.itemId} onChange={(event) => setOfferForm((prev) => ({ ...prev, itemId: event.target.value }))} className="border px-2 py-1" />
-          </label>
-          <button type="submit" className="border px-3 py-2" disabled={loading || !canCreate}>
-            {loading ? 'Invio...' : 'Crea offerta (status Open)'}
-          </button>
-        </form>
-      </section>
-      <section className="space-y-3">
-        <h2 className="font-semibold">Offerte</h2>
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Borrower UserId (per accettare)</span>
-          <input value={borrowerUserId} onChange={(event) => setBorrowerUserId(event.target.value)} className="border px-2 py-1" />
-        </label>
-        <div className="space-y-2 text-sm">
-          {offers.length ? (
-            offers.map((offer) => (
-              <div key={offer.id} className="border px-3 py-2 space-y-1">
-                <div className="font-medium">{offer.message}</div>
-                <div>Status: {offer.status}</div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" className="border px-2 py-1 text-xs" onClick={() => handleAccept(offer.id)} disabled={loading || !borrowerUserId}>
-                    Accetta
-                  </button>
-                  <button type="button" className="border px-2 py-1 text-xs" onClick={() => handleReject(offer.id)} disabled={loading}>
-                    Rifiuta
-                  </button>
-                  <button type="button" className="border px-2 py-1 text-xs" onClick={() => handleWithdraw(offer.id)} disabled={loading}>
-                    Ritira
-                  </button>
+        <Card className="border-transparent shadow-sm">
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">{request.title}</h2>
+                <p className="text-sm text-slate-600 mt-1">{request.description}</p>
+              </div>
+              <Badge variant="purple">{request.status}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-xs text-slate-500">
+              <div>
+                <div className="font-semibold uppercase tracking-wide text-[10px] text-slate-400">Richiedente</div>
+                <div className="text-slate-700">{requesterName}</div>
+              </div>
+              <div>
+                <div className="font-semibold uppercase tracking-wide text-[10px] text-slate-400">Periodo</div>
+                <div className="text-slate-700">
+                  {formattedNeededFrom || formattedNeededTo
+                    ? `${formattedNeededFrom ?? '-'} -> ${formattedNeededTo ?? '-'}`
+                    : 'Nessun periodo indicato'}
                 </div>
               </div>
-            ))
-          ) : (
-            <div>Nessuna offerta.</div>
-          )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold">Offerte ricevute</h2>
         </div>
+        {offers.length ? (
+          <div className="space-y-3">
+            {offers.map((offer) => {
+              const offererName = offer.offerer?.displayName || offer.offerer?.userName || offer.offerer?.id;
+              const createdAt = offer.createdAt ? new Date(offer.createdAt).toLocaleDateString() : '';
+              const isOfferOwner = Boolean(userId && offer.offererUserId && userId === offer.offererUserId);
+              const isOfferOpen = offer.status === 'Open';
+              return (
+                <Card key={offer.id}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-slate-900">{offererName}</div>
+                        <div className="text-xs text-slate-500">{createdAt}</div>
+                      </div>
+                      <Badge variant={offer.status === 'Open' ? 'purple' : 'default'}>{offer.status}</Badge>
+                    </div>
+                    <div className="text-sm text-slate-700">{offer.message}</div>
+                    <div className="text-xs text-slate-500">
+                      Oggetto: {offer.itemId ? 'Associato' : 'Non indicato'}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {isRequester && isOfferOpen && isRequestOpen && (
+                        <>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleAccept(offer.id)}
+                            disabled={loading || !requesterId}
+                          >
+                            Accetta
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleReject(offer.id)}
+                            disabled={loading}
+                          >
+                            Rifiuta
+                          </Button>
+                        </>
+                      )}
+                      {isOfferOwner && isOfferOpen && (
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleWithdraw(offer.id)}
+                          disabled={loading}
+                        >
+                          Ritira
+                        </Button>
+                      )}
+                    </div>
+                    {!requesterId && (
+                      <div className="text-xs text-red-500">Impossibile accettare: richiedente non disponibile.</div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
+            Nessuna offerta per ora.
+          </div>
+        )}
       </section>
     </div>
   );
 };
 
 export default RequestDetailsPage;
+

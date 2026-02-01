@@ -14,6 +14,7 @@ import RecoveryPage from '../pages/RecoveryPage';
 import RegisterPage from '../pages/RegisterPage';
 import RequestsPage from '../pages/RequestsPage';
 import RequestDetailsPage from '../pages/RequestDetailsPage';
+import RequestOfferPage from '../pages/RequestOfferPage';
 import ResetPage from '../pages/ResetPage';
 import VerifyPage from '../pages/VerifyPage';
 
@@ -43,6 +44,7 @@ const AppRoutes: React.FC = () => (
       <Route path="/community/:id/members" element={<CommunityMembersPage />} />
       <Route path="/requests" element={<RequestsPage />} />
       <Route path="/requests/:id" element={<RequestDetailsPage />} />
+      <Route path="/requests/:id/offer" element={<RequestOfferPage />} />
       <Route path="/items" element={<ItemsPage />} />
       <Route path="/me" element={<MePage />} />
     </Route>

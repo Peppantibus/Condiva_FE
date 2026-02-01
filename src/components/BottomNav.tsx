@@ -13,7 +13,7 @@ export const BottomNav: React.FC = () => {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe pt-2 px-6 h-[var(--bottom-nav-height)]">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe pt-2 px-6 h-[var(--bottom-nav-height)] lg:hidden">
             <div className="flex justify-between items-center max-w-md mx-auto h-full pb-2">
                 {navItems.map((item) => (
                     <NavLink

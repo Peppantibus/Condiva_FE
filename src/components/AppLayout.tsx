@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../state/auth';
 import { useSession } from '../state/session';
 import { BottomNav } from './BottomNav';
+import { SideNav } from './SideNav';
 import { LogOutIcon } from './ui/Icons';
 import { Button } from './ui/Button';
 
@@ -31,27 +32,38 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 relative pb-[var(--bottom-nav-height)]">
-      {/* Top Header - Mobile Optimized */}
+    <div className="min-h-screen bg-slate-50 relative pb-[var(--bottom-nav-height)] lg:pb-0 lg:pl-64">
+      <SideNav />
+
+      {/* Top Header - Mobile Optimized, Adapted for Desktop */}
       <header
-        className={`fixed top-0 left-0 right-0 z-40 bg-white transition-shadow duration-200 px-4 h-[var(--header-height)] flex items-center justify-between
+        className={`fixed top-0 left-0 right-0 lg:left-64 z-40 bg-white transition-shadow duration-200 px-4 lg:px-8 h-[var(--header-height)] flex items-center justify-between
           ${scrolled ? 'shadow-md' : 'border-b border-slate-100'}
         `}
       >
-        <div className="flex items-center gap-2 max-w-md w-full mx-auto justify-between">
+        <div className="flex items-center gap-2 max-w-md lg:max-w-7xl w-full mx-auto justify-between">
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent truncate flex-1">
             {getPageTitle(location.pathname)}
           </h1>
 
-          <Button variant="ghost" size="sm" onClick={logout} className="!p-2 text-slate-400">
-            <LogOutIcon className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="hidden lg:block text-sm text-slate-500 mr-2">
+              {activeCommunityName}
+            </span>
+            <Button variant="ghost" size="sm" onClick={logout} className="!p-2 text-slate-400 lg:hidden">
+              <LogOutIcon className="w-5 h-5" />
+            </Button>
+            {/* Desktop Profile/Logout could go here if not in sidebar, but kept sidebar-only for logout for now to be clean */}
+            <div className="hidden lg:block w-8 h-8 rounded-full bg-slate-200" />
+          </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="pt-[calc(var(--header-height)+16px)] px-4 max-w-md mx-auto w-full min-h-[calc(100vh-var(--bottom-nav-height))]">
-        <Outlet />
+      <main className="pt-[calc(var(--header-height)+16px)] lg:pt-[calc(var(--header-height)+32px)] px-4 lg:px-8 max-w-md lg:max-w-7xl mx-auto w-full min-h-[calc(100vh-var(--bottom-nav-height))] lg:min-h-screen transition-[padding] duration-200">
+        <div className="mx-auto w-full lg:max-w-none">
+          <Outlet />
+        </div>
       </main>
 
       {/* Bottom Navigation */}

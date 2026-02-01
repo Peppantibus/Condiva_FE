@@ -120,7 +120,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (communities.length === 1) {
           const onlyCommunity = communities[0];
-          setActiveCommunity(onlyCommunity.id, onlyCommunity.name);
+          setActiveCommunity(onlyCommunity.id, onlyCommunity.name ?? null);
         } else if (activeCommunityId && !byId.has(activeCommunityId)) {
           setActiveCommunity(null, null);
         }

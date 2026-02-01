@@ -160,9 +160,12 @@ const CommunityPage: React.FC = () => {
                 <Card
                   key={membership.communityId}
                   onClick={() => setActiveCommunity(membership.communityId, community?.name || membership.communityId)}
-                  className={`border-2 transition-all ${isActive ? 'border-primary-500 bg-primary-50/50' : 'border-transparent hover:border-slate-200'}`}
+                  className={`border-2 transition-all flex overflow-hidden cursor-pointer hover:shadow-md ${isActive ? 'border-primary-500 bg-primary-50/50' : 'border-transparent hover:border-slate-200'}`}
                 >
-                  <CardContent className="flex items-center justify-between gap-3 p-4">
+                  <div className="w-24 bg-slate-100 flex items-center justify-center shrink-0">
+                    <UsersIcon className="w-10 h-10 text-slate-300 opacity-50" />
+                  </div>
+                  <CardContent className="flex-1 flex items-center justify-between gap-3 p-4">
                     <div className="flex-1">
                       <h3 className="font-bold text-slate-900">{community?.name || 'Community Sconosciuta'}</h3>
                       <p className="text-sm text-slate-500">{community?.description || 'Nessuna descrizione'}</p>
