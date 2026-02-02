@@ -6,6 +6,7 @@ import DashboardPage from '../pages/DashboardPage';
 import CommunityPage from '../pages/CommunityPage';
 import CommunityMembersPage from '../pages/CommunityMembersPage';
 import ItemsPage from '../pages/ItemsPage';
+import ItemDetailsPage from '../pages/ItemDetailsPage';
 import JoinPage from '../pages/JoinPage';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
@@ -15,6 +16,7 @@ import RegisterPage from '../pages/RegisterPage';
 import RequestsPage from '../pages/RequestsPage';
 import RequestDetailsPage from '../pages/RequestDetailsPage';
 import RequestOfferPage from '../pages/RequestOfferPage';
+import LoansPage from '../pages/LoansPage';
 import ResetPage from '../pages/ResetPage';
 import VerifyPage from '../pages/VerifyPage';
 
@@ -46,6 +48,8 @@ const AppRoutes: React.FC = () => (
       <Route path="/requests/:id" element={<RequestDetailsPage />} />
       <Route path="/requests/:id/offer" element={<RequestOfferPage />} />
       <Route path="/items" element={<ItemsPage />} />
+      <Route path="/items/:id" element={<ItemDetailsPage />} />
+      <Route path="/loans" element={<LoansPage />} />
       <Route path="/me" element={<MePage />} />
     </Route>
 

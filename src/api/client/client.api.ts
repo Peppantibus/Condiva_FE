@@ -1219,10 +1219,40 @@ export class ApiClient {
     }
 
     /**
+     * @param communityId (optional) 
+     * @param status (optional) 
+     * @param from (optional) 
+     * @param to (optional) 
+     * @param page (optional) 
+     * @param pageSize (optional) 
      * @return OK
      */
-    loansAll(signal?: AbortSignal): Promise<LoanListItemDto[]> {
-        let url_ = this.baseUrl + "/api/loans";
+    loansGET(communityId?: string | undefined, status?: string | undefined, from?: Date | undefined, to?: Date | undefined, page?: number | undefined, pageSize?: number | undefined, signal?: AbortSignal): Promise<LoanListItemDtoPagedResponseDto> {
+        let url_ = this.baseUrl + "/api/loans?";
+        if (communityId === null)
+            throw new globalThis.Error("The parameter 'communityId' cannot be null.");
+        else if (communityId !== undefined)
+            url_ += "communityId=" + encodeURIComponent("" + communityId) + "&";
+        if (status === null)
+            throw new globalThis.Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "status=" + encodeURIComponent("" + status) + "&";
+        if (from === null)
+            throw new globalThis.Error("The parameter 'from' cannot be null.");
+        else if (from !== undefined)
+            url_ += "from=" + encodeURIComponent(from ? "" + from.toISOString() : "") + "&";
+        if (to === null)
+            throw new globalThis.Error("The parameter 'to' cannot be null.");
+        else if (to !== undefined)
+            url_ += "to=" + encodeURIComponent(to ? "" + to.toISOString() : "") + "&";
+        if (page === null)
+            throw new globalThis.Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1234,25 +1264,18 @@ export class ApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processLoansAll(_response);
+            return this.processLoansGET(_response);
         });
     }
 
-    protected processLoansAll(response: Response): Promise<LoanListItemDto[]> {
+    protected processLoansGET(response: Response): Promise<LoanListItemDtoPagedResponseDto> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(LoanListItemDto.fromJS(item));
-            }
-            else {
-                result200 = null as any;
-            }
+            result200 = LoanListItemDtoPagedResponseDto.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1260,7 +1283,7 @@ export class ApiClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<LoanListItemDto[]>(null as any);
+        return Promise.resolve<LoanListItemDtoPagedResponseDto>(null as any);
     }
 
     /**
@@ -1308,7 +1331,7 @@ export class ApiClient {
     /**
      * @return OK
      */
-    loansGET(id: string, signal?: AbortSignal): Promise<LoanDetailsDto> {
+    loansGET2(id: string, signal?: AbortSignal): Promise<LoanDetailsDto> {
         let url_ = this.baseUrl + "/api/loans/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1324,11 +1347,11 @@ export class ApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processLoansGET(_response);
+            return this.processLoansGET2(_response);
         });
     }
 
-    protected processLoansGET(response: Response): Promise<LoanDetailsDto> {
+    protected processLoansGET2(response: Response): Promise<LoanDetailsDto> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1472,8 +1495,8 @@ export class ApiClient {
     /**
      * @return OK
      */
-    return(id: string, signal?: AbortSignal): Promise<LoanDetailsDto> {
-        let url_ = this.baseUrl + "/api/loans/{id}/return";
+    returnRequest(id: string, signal?: AbortSignal): Promise<LoanDetailsDto> {
+        let url_ = this.baseUrl + "/api/loans/{id}/return-request";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -1488,11 +1511,93 @@ export class ApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processReturn(_response);
+            return this.processReturnRequest(_response);
         });
     }
 
-    protected processReturn(response: Response): Promise<LoanDetailsDto> {
+    protected processReturnRequest(response: Response): Promise<LoanDetailsDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = LoanDetailsDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<LoanDetailsDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    returnConfirm(id: string, signal?: AbortSignal): Promise<LoanDetailsDto> {
+        let url_ = this.baseUrl + "/api/loans/{id}/return-confirm";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processReturnConfirm(_response);
+        });
+    }
+
+    protected processReturnConfirm(response: Response): Promise<LoanDetailsDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = LoanDetailsDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<LoanDetailsDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    returnCancel(id: string, signal?: AbortSignal): Promise<LoanDetailsDto> {
+        let url_ = this.baseUrl + "/api/loans/{id}/return-cancel";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processReturnCancel(_response);
+        });
+    }
+
+    protected processReturnCancel(response: Response): Promise<LoanDetailsDto> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1881,6 +1986,234 @@ export class ApiClient {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 204) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @param communityId (optional) 
+     * @param unreadOnly (optional) 
+     * @param page (optional) 
+     * @param pageSize (optional) 
+     * @return OK
+     */
+    notifications(communityId?: string | undefined, unreadOnly?: boolean | undefined, page?: number | undefined, pageSize?: number | undefined, signal?: AbortSignal): Promise<NotificationListItemDtoPagedResult> {
+        let url_ = this.baseUrl + "/api/notifications?";
+        if (communityId === null)
+            throw new globalThis.Error("The parameter 'communityId' cannot be null.");
+        else if (communityId !== undefined)
+            url_ += "communityId=" + encodeURIComponent("" + communityId) + "&";
+        if (unreadOnly === null)
+            throw new globalThis.Error("The parameter 'unreadOnly' cannot be null.");
+        else if (unreadOnly !== undefined)
+            url_ += "unreadOnly=" + encodeURIComponent("" + unreadOnly) + "&";
+        if (page === null)
+            throw new globalThis.Error("The parameter 'page' cannot be null.");
+        else if (page !== undefined)
+            url_ += "page=" + encodeURIComponent("" + page) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processNotifications(_response);
+        });
+    }
+
+    protected processNotifications(response: Response): Promise<NotificationListItemDtoPagedResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = NotificationListItemDtoPagedResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<NotificationListItemDtoPagedResult>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    notifications2(id: string, signal?: AbortSignal): Promise<NotificationDetailsDto> {
+        let url_ = this.baseUrl + "/api/notifications/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processNotifications2(_response);
+        });
+    }
+
+    protected processNotifications2(response: Response): Promise<NotificationDetailsDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = NotificationDetailsDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<NotificationDetailsDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    read(id: string, signal?: AbortSignal): Promise<NotificationDetailsDto> {
+        let url_ = this.baseUrl + "/api/notifications/{id}/read";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRead(_response);
+        });
+    }
+
+    protected processRead(response: Response): Promise<NotificationDetailsDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = NotificationDetailsDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<NotificationDetailsDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    readAll(body: NotificationMarkReadRequestDto, signal?: AbortSignal): Promise<NotificationDetailsDto[]> {
+        let url_ = this.baseUrl + "/api/notifications/read";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processReadAll(_response);
+        });
+    }
+
+    protected processReadAll(response: Response): Promise<NotificationDetailsDto[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(NotificationDetailsDto.fromJS(item));
+            }
+            else {
+                result200 = null as any;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<NotificationDetailsDto[]>(null as any);
+    }
+
+    /**
+     * @param communityId (optional) 
+     * @return OK
+     */
+    unreadCount(communityId?: string | undefined, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/api/notifications/unread-count?";
+        if (communityId === null)
+            throw new globalThis.Error("The parameter 'communityId' cannot be null.");
+        else if (communityId !== undefined)
+            url_ += "communityId=" + encodeURIComponent("" + communityId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processUnreadCount(_response);
+        });
+    }
+
+    protected processUnreadCount(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
             return response.text().then((_responseText) => {
             return;
             });
@@ -3717,6 +4050,62 @@ export interface IItemListItemDtoPagedResponseDto {
     total?: number;
 }
 
+export class ItemSummaryDto implements IItemSummaryDto {
+    id?: string | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+    category?: string | undefined;
+    status?: string | undefined;
+    ownerUserId?: string | undefined;
+
+    constructor(data?: IItemSummaryDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.category = _data["category"];
+            this.status = _data["status"];
+            this.ownerUserId = _data["ownerUserId"];
+        }
+    }
+
+    static fromJS(data: any): ItemSummaryDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ItemSummaryDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["category"] = this.category;
+        data["status"] = this.status;
+        data["ownerUserId"] = this.ownerUserId;
+        return data;
+    }
+}
+
+export interface IItemSummaryDto {
+    id?: string | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+    category?: string | undefined;
+    status?: string | undefined;
+    ownerUserId?: string | undefined;
+}
+
 export class JoinCommunityRequestDto implements IJoinCommunityRequestDto {
     enterCode?: string | undefined;
 
@@ -3765,6 +4154,11 @@ export class LoanDetailsDto implements ILoanDetailsDto {
     startAt?: Date;
     dueAt?: Date | undefined;
     returnedAt?: Date | undefined;
+    returnRequestedAt?: Date | undefined;
+    returnConfirmedAt?: Date | undefined;
+    lender?: UserSummaryDto;
+    borrower?: UserSummaryDto;
+    item?: ItemSummaryDto;
 
     constructor(data?: ILoanDetailsDto) {
         if (data) {
@@ -3788,6 +4182,11 @@ export class LoanDetailsDto implements ILoanDetailsDto {
             this.startAt = _data["startAt"] ? new Date(_data["startAt"].toString()) : undefined as any;
             this.dueAt = _data["dueAt"] ? new Date(_data["dueAt"].toString()) : undefined as any;
             this.returnedAt = _data["returnedAt"] ? new Date(_data["returnedAt"].toString()) : undefined as any;
+            this.returnRequestedAt = _data["returnRequestedAt"] ? new Date(_data["returnRequestedAt"].toString()) : undefined as any;
+            this.returnConfirmedAt = _data["returnConfirmedAt"] ? new Date(_data["returnConfirmedAt"].toString()) : undefined as any;
+            this.lender = _data["lender"] ? UserSummaryDto.fromJS(_data["lender"]) : undefined as any;
+            this.borrower = _data["borrower"] ? UserSummaryDto.fromJS(_data["borrower"]) : undefined as any;
+            this.item = _data["item"] ? ItemSummaryDto.fromJS(_data["item"]) : undefined as any;
         }
     }
 
@@ -3811,6 +4210,11 @@ export class LoanDetailsDto implements ILoanDetailsDto {
         data["startAt"] = this.startAt ? this.startAt.toISOString() : undefined as any;
         data["dueAt"] = this.dueAt ? this.dueAt.toISOString() : undefined as any;
         data["returnedAt"] = this.returnedAt ? this.returnedAt.toISOString() : undefined as any;
+        data["returnRequestedAt"] = this.returnRequestedAt ? this.returnRequestedAt.toISOString() : undefined as any;
+        data["returnConfirmedAt"] = this.returnConfirmedAt ? this.returnConfirmedAt.toISOString() : undefined as any;
+        data["lender"] = this.lender ? this.lender.toJSON() : undefined as any;
+        data["borrower"] = this.borrower ? this.borrower.toJSON() : undefined as any;
+        data["item"] = this.item ? this.item.toJSON() : undefined as any;
         return data;
     }
 }
@@ -3827,6 +4231,11 @@ export interface ILoanDetailsDto {
     startAt?: Date;
     dueAt?: Date | undefined;
     returnedAt?: Date | undefined;
+    returnRequestedAt?: Date | undefined;
+    returnConfirmedAt?: Date | undefined;
+    lender?: UserSummaryDto;
+    borrower?: UserSummaryDto;
+    item?: ItemSummaryDto;
 }
 
 export class LoanListItemDto implements ILoanListItemDto {
@@ -3841,6 +4250,11 @@ export class LoanListItemDto implements ILoanListItemDto {
     startAt?: Date;
     dueAt?: Date | undefined;
     returnedAt?: Date | undefined;
+    returnRequestedAt?: Date | undefined;
+    returnConfirmedAt?: Date | undefined;
+    lender?: UserSummaryDto;
+    borrower?: UserSummaryDto;
+    item?: ItemSummaryDto;
 
     constructor(data?: ILoanListItemDto) {
         if (data) {
@@ -3864,6 +4278,11 @@ export class LoanListItemDto implements ILoanListItemDto {
             this.startAt = _data["startAt"] ? new Date(_data["startAt"].toString()) : undefined as any;
             this.dueAt = _data["dueAt"] ? new Date(_data["dueAt"].toString()) : undefined as any;
             this.returnedAt = _data["returnedAt"] ? new Date(_data["returnedAt"].toString()) : undefined as any;
+            this.returnRequestedAt = _data["returnRequestedAt"] ? new Date(_data["returnRequestedAt"].toString()) : undefined as any;
+            this.returnConfirmedAt = _data["returnConfirmedAt"] ? new Date(_data["returnConfirmedAt"].toString()) : undefined as any;
+            this.lender = _data["lender"] ? UserSummaryDto.fromJS(_data["lender"]) : undefined as any;
+            this.borrower = _data["borrower"] ? UserSummaryDto.fromJS(_data["borrower"]) : undefined as any;
+            this.item = _data["item"] ? ItemSummaryDto.fromJS(_data["item"]) : undefined as any;
         }
     }
 
@@ -3887,6 +4306,11 @@ export class LoanListItemDto implements ILoanListItemDto {
         data["startAt"] = this.startAt ? this.startAt.toISOString() : undefined as any;
         data["dueAt"] = this.dueAt ? this.dueAt.toISOString() : undefined as any;
         data["returnedAt"] = this.returnedAt ? this.returnedAt.toISOString() : undefined as any;
+        data["returnRequestedAt"] = this.returnRequestedAt ? this.returnRequestedAt.toISOString() : undefined as any;
+        data["returnConfirmedAt"] = this.returnConfirmedAt ? this.returnConfirmedAt.toISOString() : undefined as any;
+        data["lender"] = this.lender ? this.lender.toJSON() : undefined as any;
+        data["borrower"] = this.borrower ? this.borrower.toJSON() : undefined as any;
+        data["item"] = this.item ? this.item.toJSON() : undefined as any;
         return data;
     }
 }
@@ -3903,6 +4327,67 @@ export interface ILoanListItemDto {
     startAt?: Date;
     dueAt?: Date | undefined;
     returnedAt?: Date | undefined;
+    returnRequestedAt?: Date | undefined;
+    returnConfirmedAt?: Date | undefined;
+    lender?: UserSummaryDto;
+    borrower?: UserSummaryDto;
+    item?: ItemSummaryDto;
+}
+
+export class LoanListItemDtoPagedResponseDto implements ILoanListItemDtoPagedResponseDto {
+    items?: LoanListItemDto[] | undefined;
+    page?: number;
+    pageSize?: number;
+    total?: number;
+
+    constructor(data?: ILoanListItemDtoPagedResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(LoanListItemDto.fromJS(item));
+            }
+            this.page = _data["page"];
+            this.pageSize = _data["pageSize"];
+            this.total = _data["total"];
+        }
+    }
+
+    static fromJS(data: any): LoanListItemDtoPagedResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new LoanListItemDtoPagedResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item ? item.toJSON() : undefined as any);
+        }
+        data["page"] = this.page;
+        data["pageSize"] = this.pageSize;
+        data["total"] = this.total;
+        return data;
+    }
+}
+
+export interface ILoanListItemDtoPagedResponseDto {
+    items?: LoanListItemDto[] | undefined;
+    page?: number;
+    pageSize?: number;
+    total?: number;
 }
 
 export class LoginRequest implements ILoginRequest {
@@ -4079,6 +4564,265 @@ export interface IMembershipListItemDto {
     createdAt?: Date;
     joinedAt?: Date | undefined;
     users?: UserSummaryDto;
+}
+
+export class NotificationDetailsDto implements INotificationDetailsDto {
+    id?: string | undefined;
+    communityId?: string | undefined;
+    type?: NotificationType;
+    eventId?: string | undefined;
+    entityType?: string | undefined;
+    entityId?: string | undefined;
+    payload?: string | undefined;
+    status?: NotificationStatus;
+    createdAt?: Date;
+    readAt?: Date | undefined;
+
+    constructor(data?: INotificationDetailsDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.communityId = _data["communityId"];
+            this.type = _data["type"];
+            this.eventId = _data["eventId"];
+            this.entityType = _data["entityType"];
+            this.entityId = _data["entityId"];
+            this.payload = _data["payload"];
+            this.status = _data["status"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
+            this.readAt = _data["readAt"] ? new Date(_data["readAt"].toString()) : undefined as any;
+        }
+    }
+
+    static fromJS(data: any): NotificationDetailsDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new NotificationDetailsDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["communityId"] = this.communityId;
+        data["type"] = this.type;
+        data["eventId"] = this.eventId;
+        data["entityType"] = this.entityType;
+        data["entityId"] = this.entityId;
+        data["payload"] = this.payload;
+        data["status"] = this.status;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
+        data["readAt"] = this.readAt ? this.readAt.toISOString() : undefined as any;
+        return data;
+    }
+}
+
+export interface INotificationDetailsDto {
+    id?: string | undefined;
+    communityId?: string | undefined;
+    type?: NotificationType;
+    eventId?: string | undefined;
+    entityType?: string | undefined;
+    entityId?: string | undefined;
+    payload?: string | undefined;
+    status?: NotificationStatus;
+    createdAt?: Date;
+    readAt?: Date | undefined;
+}
+
+export class NotificationListItemDto implements INotificationListItemDto {
+    id?: string | undefined;
+    communityId?: string | undefined;
+    type?: NotificationType;
+    eventId?: string | undefined;
+    entityType?: string | undefined;
+    entityId?: string | undefined;
+    status?: NotificationStatus;
+    createdAt?: Date;
+    readAt?: Date | undefined;
+
+    constructor(data?: INotificationListItemDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.communityId = _data["communityId"];
+            this.type = _data["type"];
+            this.eventId = _data["eventId"];
+            this.entityType = _data["entityType"];
+            this.entityId = _data["entityId"];
+            this.status = _data["status"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : undefined as any;
+            this.readAt = _data["readAt"] ? new Date(_data["readAt"].toString()) : undefined as any;
+        }
+    }
+
+    static fromJS(data: any): NotificationListItemDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new NotificationListItemDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["communityId"] = this.communityId;
+        data["type"] = this.type;
+        data["eventId"] = this.eventId;
+        data["entityType"] = this.entityType;
+        data["entityId"] = this.entityId;
+        data["status"] = this.status;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : undefined as any;
+        data["readAt"] = this.readAt ? this.readAt.toISOString() : undefined as any;
+        return data;
+    }
+}
+
+export interface INotificationListItemDto {
+    id?: string | undefined;
+    communityId?: string | undefined;
+    type?: NotificationType;
+    eventId?: string | undefined;
+    entityType?: string | undefined;
+    entityId?: string | undefined;
+    status?: NotificationStatus;
+    createdAt?: Date;
+    readAt?: Date | undefined;
+}
+
+export class NotificationListItemDtoPagedResult implements INotificationListItemDtoPagedResult {
+    items?: NotificationListItemDto[] | undefined;
+    page?: number;
+    pageSize?: number;
+    total?: number;
+
+    constructor(data?: INotificationListItemDtoPagedResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(NotificationListItemDto.fromJS(item));
+            }
+            this.page = _data["page"];
+            this.pageSize = _data["pageSize"];
+            this.total = _data["total"];
+        }
+    }
+
+    static fromJS(data: any): NotificationListItemDtoPagedResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new NotificationListItemDtoPagedResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item ? item.toJSON() : undefined as any);
+        }
+        data["page"] = this.page;
+        data["pageSize"] = this.pageSize;
+        data["total"] = this.total;
+        return data;
+    }
+}
+
+export interface INotificationListItemDtoPagedResult {
+    items?: NotificationListItemDto[] | undefined;
+    page?: number;
+    pageSize?: number;
+    total?: number;
+}
+
+export class NotificationMarkReadRequestDto implements INotificationMarkReadRequestDto {
+    ids?: string[] | undefined;
+
+    constructor(data?: INotificationMarkReadRequestDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["ids"])) {
+                this.ids = [] as any;
+                for (let item of _data["ids"])
+                    this.ids!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): NotificationMarkReadRequestDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new NotificationMarkReadRequestDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.ids)) {
+            data["ids"] = [];
+            for (let item of this.ids)
+                data["ids"].push(item);
+        }
+        return data;
+    }
+}
+
+export interface INotificationMarkReadRequestDto {
+    ids?: string[] | undefined;
+}
+
+export enum NotificationStatus {
+    Pending = "Pending",
+    Delivered = "Delivered",
+}
+
+export enum NotificationType {
+    OfferReceivedToRequester = "OfferReceivedToRequester",
+    OfferAcceptedToLender = "OfferAcceptedToLender",
+    OfferRejectedToLender = "OfferRejectedToLender",
+    OfferWithdrawnToRequester = "OfferWithdrawnToRequester",
+    LoanReservedToBorrower = "LoanReservedToBorrower",
+    LoanReservedToLender = "LoanReservedToLender",
+    LoanStartedToBorrower = "LoanStartedToBorrower",
+    LoanReturnRequestedToLender = "LoanReturnRequestedToLender",
+    LoanReturnConfirmedToBorrower = "LoanReturnConfirmedToBorrower",
+    LoanReturnConfirmedToLender = "LoanReturnConfirmedToLender",
+    LoanReturnCanceledToLender = "LoanReturnCanceledToLender",
 }
 
 export class OfferDetailsDto implements IOfferDetailsDto {

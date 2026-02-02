@@ -8,4 +8,5 @@ export * from './memberships';
 export * from './offers';
 export * from './reputation';
 export * from './requests';
+export * from './notifications';
 export * from './types';

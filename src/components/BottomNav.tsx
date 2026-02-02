@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { HomeIcon, UsersIcon, HandHeartIcon, UserIcon, PackageIcon } from './ui/Icons';
+import { HomeIcon, UsersIcon, HandHeartIcon, UserIcon, PackageIcon, RepeatIcon } from './ui/Icons';
 
 export const BottomNav: React.FC = () => {
     const navItems = [
         { to: '/dashboard', icon: <HomeIcon className="w-6 h-6" />, label: 'Home' },
         { to: '/community', icon: <UsersIcon className="w-6 h-6" />, label: 'Community' },
         { to: '/requests', icon: <HandHeartIcon className="w-6 h-6" />, label: 'Richieste' },
+        { to: '/loans', icon: <RepeatIcon className="w-6 h-6" />, label: 'Prestiti' },
         // Adding Items as a distinct tab as per UI reference potential
         { to: '/items', icon: <PackageIcon className="w-6 h-6" />, label: 'Oggetti' },
         { to: '/me', icon: <UserIcon className="w-6 h-6" />, label: 'Profilo' },

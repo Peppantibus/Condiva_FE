@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { PackageIcon, PlusIcon } from '../components/ui/Icons';
+import { PackageIcon, PlusIcon, TrashIcon } from '../components/ui/Icons';
 import { Link } from 'react-router-dom';
 
 const ItemsPage: React.FC = () => {
@@ -119,37 +119,88 @@ const ItemsPage: React.FC = () => {
               <PackageIcon className="w-5 h-5 text-secondary-600" />
               Inventario
             </h2>
-            <Button variant="ghost" size="sm" onClick={loadItems}>Aggiorna</Button>
+            <Button variant="ghost" size="sm" onClick={loadItems}>
+              Aggiorna
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {items.length ? (
-              items.map((item) => (
-                <Card key={item.id} className="overflow-hidden h-full flex flex-col">
-                  <div className="h-28 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center relative">
-                    <PackageIcon className="w-10 h-10 text-slate-400 opacity-50" />
-                    <div className="absolute top-2 right-2">
-                      <Badge variant={item.status === 'Available' ? 'success' : 'default'} className="text-[10px]">{item.status}</Badge>
-                    </div>
+              items.map((item) => {
+                const isOwner = item.owner?.id === userId;
+                return (
+                  <div key={item.id} className="relative h-full group">
+                    <Link to={`/items/${item.id}`} className="block h-full">
+                      <Card className="overflow-hidden h-full flex flex-col border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-200">
+                        {/* Header Image Area */}
+                        <div className="h-24 bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative">
+                          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                            <PackageIcon className="w-5 h-5 text-slate-400" />
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <Badge
+                              variant={item.status === 'Available' ? 'success' : 'default'}
+                              className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5"
+                            >
+                              {item.status === 'Available' ? 'Disponibile' : item.status}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Content Body */}
+                        <CardContent className="p-3 flex-1 flex flex-col">
+                          <div className="mb-2">
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-1">
+                              {item.category}
+                            </span>
+                            <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1" title={item.name}>
+                              {item.name}
+                            </h3>
+                          </div>
+
+                          <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
+                            {item.description}
+                          </p>
+
+                          {/* Footer: Owner & Actions */}
+                          <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
+                            <div className="flex items-center gap-1.5 max-w-[70%]">
+                              <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-700 shrink-0">
+                                {(item.owner?.displayName?.[0] || item.owner?.userName?.[0] || '?').toUpperCase()}
+                              </div>
+                              <span className="text-[10px] text-slate-400 truncate">
+                                {item.owner?.displayName || item.owner?.userName || 'Sconosciuto'}
+                              </span>
+                            </div>
+
+                            {/* Spacer for delete button alignment, button is absolute outside link to avoid nesting issues or bubbling weirdness if inside link */}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+
+                    {isOwner && (
+                      <div className="absolute bottom-3 right-3 z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleDelete(item.id);
+                          }}
+                          className="bg-white/80 backdrop-blur-sm text-slate-300 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 shadow-sm border border-slate-100"
+                          title="Elimina"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <CardContent className="p-3 flex-1 flex flex-col">
-                    <h3 className="font-bold text-sm text-slate-900 mb-1">{item.name}</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mb-2 flex-1">{item.description}</p>
-                    <div className="text-[10px] text-slate-400 mb-2">
-                      Proprietario: {item.owner.displayName || item.owner.userName || item.owner.id}
-                    </div>
-                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-50">
-                      <span className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1 rounded">{item.category}</span>
-                      <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-500">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                );
+              })
             ) : (
-              <div className="col-span-2 text-center py-8 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
-                Nessun oggetto nell'inventario.
+              <div className="col-span-2 text-center py-12 px-4 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+                <PackageIcon className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                <p className="text-sm">Nessun oggetto nell'inventario.</p>
               </div>
             )}
           </div>

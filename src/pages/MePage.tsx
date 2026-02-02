@@ -2,8 +2,8 @@ import React from 'react';
 import ApiErrorBanner from '../components/ApiErrorBanner';
 import { getMyReputation } from '../api/reputation';
 import { listMyOffers } from '../api/offers';
-import { listLoans } from '../api/loans';
-import { LoanListItemDto, OfferListItemDto, ReputationDetailsDto } from '../api/types';
+
+import { OfferListItemDto, ReputationDetailsDto } from '../api/types';
 import { useSession } from '../state/session';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
@@ -15,7 +15,6 @@ const MePage: React.FC = () => {
   const { activeCommunityId, userId, userName } = useSession(); // Accessing userId explicitly if needed for display
   const [reputation, setReputation] = React.useState<ReputationDetailsDto | null>(null);
   const [offers, setOffers] = React.useState<OfferListItemDto[]>([]);
-  const [loans, setLoans] = React.useState<LoanListItemDto[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<unknown>(null);
 
@@ -24,14 +23,12 @@ const MePage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      const [repData, offersData, loansData] = await Promise.all([
+      const [repData, offersData] = await Promise.all([
         getMyReputation(activeCommunityId),
         listMyOffers({ communityId: activeCommunityId, page: 1, pageSize: 20 }),
-        listLoans(), // Note: listLoans might need community filter if API supports it, currently assuming it returns user's loans
       ]);
       setReputation(repData);
       setOffers(offersData.items);
-      setLoans(loansData);
     } catch (err) {
       setError(err);
     } finally {
@@ -136,29 +133,7 @@ const MePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Loans Section */}
-      <section className="space-y-4">
-        <h3 className="font-bold text-slate-800 px-1">Prestiti in corso</h3>
-        <div className="space-y-3">
-          {loans.length ? (
-            loans.map((loan) => (
-              <Card key={loan.id}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-mono text-xs text-slate-400">ID: {loan.id.substring(0, 8)}...</span>
-                    <Badge variant={loan.status === 'InLoan' ? 'purple' : 'default'}>{loan.status}</Badge>
-                  </div>
-                  <div className="font-medium text-slate-900">Oggetto: {loan.itemId}</div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-6 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
-              Nessun prestito attivo.
-            </div>
-          )}
-        </div>
-      </section>
+
     </div>
   );
 };

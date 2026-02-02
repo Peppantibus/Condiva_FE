@@ -9,7 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { HandHeartIcon, PlusIcon } from '../components/ui/Icons';
+import { HandHeartIcon, PlusIcon, TrashIcon } from '../components/ui/Icons';
 
 const RequestsPage: React.FC = () => {
   const { activeCommunityId, userId } = useSession();
@@ -135,98 +135,129 @@ const RequestsPage: React.FC = () => {
             <Button variant="ghost" size="sm" onClick={loadRequests}>Aggiorna</Button>
           </div>
 
-          {feed?.items?.length ? (
-            feed.items.map((request) => (
-              <Card key={request.id} className="border-transparent shadow-sm overflow-hidden group hover:shadow-md transition-all duration-200">
-                <div className="flex items-stretch min-h-[7rem]">
-                  {/* Image Placeholder - Left Side */}
-                  <div className="w-28 bg-slate-100 flex items-center justify-center shrink-0">
-                    <HandHeartIcon className="w-8 h-8 text-slate-300 opacity-50" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {feed?.items?.length ? (
+              feed.items.map((request) => (
+                <Card key={request.id} className="overflow-hidden h-full flex flex-col group border-slate-100 shadow-sm hover:shadow-md transition-all duration-200">
+                  {/* Header Image Area */}
+                  <div className="h-24 bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center relative">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                      <HandHeartIcon className="w-5 h-5 text-primary-400" />
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Badge variant="purple" className="text-[10px] uppercase tracking-wider px-2 py-0.5">
+                        {request.status}
+                      </Badge>
+                    </div>
                   </div>
 
-                  {/* Content - Middle */}
-                  <CardContent className="flex-1 p-4 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-primary-600 transition-colors">
-                          {request.title}
-                        </h3>
-                        <Badge variant="purple" className="shrink-0 ml-2">{request.status}</Badge>
-                      </div>
-                      <p className="text-sm text-slate-600 line-clamp-2 mt-1 mb-2">
-                        {request.description}
-                      </p>
+                  <CardContent className="p-3 flex-1 flex flex-col">
+                    <div className="mb-2">
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-1">
+                        {request.community.name}
+                      </span>
+                      <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1" title={request.title}>
+                        {request.title}
+                      </h3>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                      <span className="font-medium text-slate-500">
-                        {request.owner.displayName || request.owner.userName || request.owner.id}
-                      </span>
-                      <span>•</span>
-                      <span>{request.community.name}</span>
+                    <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
+                      {request.description}
+                    </p>
+
+                    <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
+                      <div className="flex items-center gap-1.5 max-w-[70%]">
+                        <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-700 shrink-0">
+                          {(request.owner.displayName?.[0] || request.owner.userName?.[0] || '?').toUpperCase()}
+                        </div>
+                        <span className="text-[10px] text-slate-400 truncate">
+                          {request.owner.displayName || request.owner.userName || 'Sconosciuto'}
+                        </span>
+                      </div>
+
+                      <Link to={`/requests/${request.id}`}>
+                        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50">
+                          Vedi
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
-
-                  {/* Actions - Right Side */}
-                  <div className="flex items-center px-4 border-l border-slate-50">
-                    <Link to={`/requests/${request.id}`}>
-                      <Button variant="ghost" size="sm" className="font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50">
-                        Dettaglio
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
-              Nessuna richiesta trovata.
-            </div>
-          )}
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
+                <HandHeartIcon className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                <p className="text-sm">Nessuna richiesta trovata.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {activeTab === 'mine' && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-          <h2 className="font-bold">Le tue richieste</h2>
-          {myRequests?.items?.length ? (
-            myRequests.items.map((request) => (
-              <Card key={request.id} className="overflow-hidden group hover:shadow-md transition-all duration-200">
-                <div className="flex h-20 items-stretch">
-                  <div className="w-20 bg-slate-100 flex items-center justify-center shrink-0">
-                    <HandHeartIcon className="w-8 h-8 text-slate-300 opacity-50" />
-                  </div>
-                  <CardContent className="flex-1 flex items-center justify-between px-6 py-0">
-                    <div className="flex items-center gap-4">
-                      <h3 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-primary-600 transition-colors">
-                        {request.title}
-                      </h3>
-                      <Badge variant={request.status === 'Open' ? 'purple' : 'default'} className="hidden sm:inline-flex">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold flex items-center gap-2">
+              Le tue richieste
+            </h2>
+            <Button variant="ghost" size="sm" onClick={loadRequests}>Aggiorna</Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {myRequests?.items?.length ? (
+              myRequests.items.map((request) => (
+                <Card key={request.id} className="overflow-hidden h-full flex flex-col group border-slate-100 shadow-sm hover:shadow-md transition-all duration-200">
+                  {/* Header Image Area */}
+                  <div className="h-24 bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                      <HandHeartIcon className="w-5 h-5 text-slate-400" />
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Badge variant={request.status === 'Open' ? 'purple' : 'default'} className="text-[10px] uppercase tracking-wider px-2 py-0.5">
                         {request.status}
                       </Badge>
                     </div>
+                  </div>
 
-                    <div className="flex items-center gap-3">
-                      {/* Mobile Badge fallback if needed, but keeping clean for desktop */}
+                  <CardContent className="p-3 flex-1 flex flex-col">
+                    <div className="mb-2">
+                      <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1" title={request.title}>
+                        {request.title}
+                      </h3>
+                      <div className="text-[10px] text-slate-400">
+                        {new Date(request.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
+                      {request.description}
+                    </p>
+
+                    <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
                       <Link to={`/requests/${request.id}`}>
-                        <Button variant="ghost" size="sm" className="font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50">
-                          Vedi
+                        <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50">
+                          Vedi Dettaglio
                         </Button>
                       </Link>
-                      <div className="h-4 w-px bg-slate-200"></div>
-                      <Button variant="ghost" size="sm" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(request.id)}>
-                        Elimina
-                      </Button>
+
+                      <button
+                        onClick={() => handleDelete(request.id)}
+                        className="text-slate-300 hover:text-red-500 transition-colors p-1 -mr-1 rounded-full hover:bg-red-50"
+                        title="Elimina"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
                     </div>
                   </CardContent>
-                </div>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-8 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
-              Non hai ancora creato richieste.
-            </div>
-          )}
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">
+                <HandHeartIcon className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                <p className="text-sm">Non hai ancora creato richieste.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 export type ItemStatus = 'Available' | 'Reserved' | 'InLoan' | 'Unavailable';
 export type RequestStatus = 'Open' | 'Accepted' | 'Closed' | 'Canceled';
 export type OfferStatus = 'Open' | 'Accepted' | 'Rejected' | 'Withdrawn';
-export type LoanStatus = 'Reserved' | 'InLoan' | 'Returned' | 'Expired';
+export type LoanStatus = 'Reserved' | 'InLoan' | 'ReturnRequested' | 'Returned' | 'Expired';
 export type MembershipRole = 'Owner' | 'Member' | 'Moderator';
 export type MembershipStatus = 'Invited' | 'Active' | 'Suspended';
 
@@ -30,6 +30,7 @@ export type OfferDetailsDto = DeepRequired<import('./client/client.api').IOfferD
 export type OfferStatusResponseDto = DeepRequired<import('./client/client.api').IOfferStatusResponseDto>;
 export type LoanListItemDto = DeepRequired<import('./client/client.api').ILoanListItemDto>;
 export type LoanDetailsDto = DeepRequired<import('./client/client.api').ILoanDetailsDto>;
+export type LoanListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').ILoanListItemDtoPagedResponseDto>;
 export type EventListItemDto = DeepRequired<import('./client/client.api').IEventListItemDto>;
 export type EventDetailsDto = DeepRequired<import('./client/client.api').IEventDetailsDto>;
 export type InviteCodeResponseDto = DeepRequired<import('./client/client.api').IInviteCodeResponseDto>;
@@ -39,6 +40,10 @@ export type ReputationWeightsDto = DeepRequired<import('./client/client.api').IR
 export type ItemListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IItemListItemDtoPagedResponseDto>;
 export type OfferListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IOfferListItemDtoPagedResponseDto>;
 export type RequestListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IRequestListItemDtoPagedResponseDto>;
+export type NotificationListItemDto = DeepRequired<import('./client/client.api').INotificationListItemDto>;
+export type NotificationDetailsDto = DeepRequired<import('./client/client.api').INotificationDetailsDto>;
+export type NotificationListItemDtoPagedResult = DeepRequired<import('./client/client.api').INotificationListItemDtoPagedResult>;
+export type NotificationMarkReadRequestDto = import('./client/client.api').INotificationMarkReadRequestDto;
 
 export type CreateCommunityRequestDto = import('./client/client.api').ICreateCommunityRequestDto;
 export type UpdateCommunityRequestDto = import('./client/client.api').IUpdateCommunityRequestDto;

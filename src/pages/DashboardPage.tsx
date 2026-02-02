@@ -83,23 +83,44 @@ const DashboardPage: React.FC = () => {
                         <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
                             {feed?.items?.length ? (
                                 feed.items.map((request) => (
-                                    <Card key={request.id} className="border-transparent shadow-sm hover:shadow-md transition-shadow h-full flex flex-col overflow-hidden">
-                                        {/* Image Placeholder */}
-                                        <div className="h-32 bg-slate-100 flex items-center justify-center">
-                                            <HandHeartIcon className="w-8 h-8 text-slate-300 opacity-50" />
+                                    <Card key={request.id} className="overflow-hidden h-full flex flex-col group border-slate-100 shadow-sm hover:shadow-md transition-all duration-200">
+                                        {/* Header Image Area */}
+                                        <div className="h-24 bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center relative">
+                                            <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                                                <HandHeartIcon className="w-5 h-5 text-primary-400" />
+                                            </div>
+                                            <div className="absolute top-2 right-2">
+                                                <Badge variant="purple" className="text-[10px] uppercase tracking-wider px-2 py-0.5">
+                                                    {request.status}
+                                                </Badge>
+                                            </div>
                                         </div>
-                                        <CardContent className="p-4 flex-1 flex flex-col">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-bold text-slate-900 line-clamp-1">{request.title}</h3>
-                                                <Badge variant="purple">{request.status}</Badge>
+
+                                        <CardContent className="p-3 flex-1 flex flex-col">
+                                            <div className="mb-2">
+                                                <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1" title={request.title}>
+                                                    {request.title}
+                                                </h3>
                                             </div>
-                                            <p className="text-sm text-slate-600 line-clamp-2 mb-2 flex-1">{request.description}</p>
-                                            <div className="text-xs text-slate-400 mb-2">
-                                                Da: {request.owner.displayName || request.owner.userName || request.owner.id}
-                                            </div>
-                                            <div className="mt-auto pt-2 flex justify-end">
-                                                <Link to={`/requests/${request.id}`} className="w-full">
-                                                    <Button variant="outline" size="sm" className="w-full">Vedi Dettagli</Button>
+
+                                            <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
+                                                {request.description}
+                                            </p>
+
+                                            <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
+                                                <div className="flex items-center gap-1.5 max-w-[70%]">
+                                                    <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-700 shrink-0">
+                                                        {(request.owner.displayName?.[0] || request.owner.userName?.[0] || '?').toUpperCase()}
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 truncate">
+                                                        {request.owner.displayName || request.owner.userName || 'Sconosciuto'}
+                                                    </span>
+                                                </div>
+
+                                                <Link to={`/requests/${request.id}`}>
+                                                    <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50">
+                                                        Vedi
+                                                    </Button>
                                                 </Link>
                                             </div>
                                         </CardContent>
@@ -123,19 +144,50 @@ const DashboardPage: React.FC = () => {
                         <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 lg:gap-6">
                             {items?.items?.length ? (
                                 items.items.map((item) => (
-                                    <Card key={item.id} className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-all duration-200">
-                                        <div className="h-24 lg:h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                            <PackageIcon className="w-8 h-8 lg:w-16 lg:h-16 text-slate-400 opacity-50" />
-                                        </div>
-                                        <CardContent className="p-3 flex-1 flex flex-col">
-                                            <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-1">{item.name}</h3>
-                                            <p className="text-xs text-slate-500 line-clamp-2 mb-1 flex-1">{item.description}</p>
-                                            <div className="text-[10px] text-slate-400 mb-2">
-                                                Di: {item.owner.displayName || item.owner.userName || item.owner.id}
+                                    <Link to={`/items/${item.id}`} key={item.id} className="block h-full group">
+                                        <Card className="overflow-hidden h-full flex flex-col border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-200">
+                                            {/* Header Image Area */}
+                                            <div className="h-24 bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative">
+                                                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                                                    <PackageIcon className="w-5 h-5 text-slate-400" />
+                                                </div>
+                                                <div className="absolute top-2 right-2">
+                                                    <Badge
+                                                        variant={item.status === 'Available' ? 'success' : 'default'}
+                                                        className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5"
+                                                    >
+                                                        {item.status === 'Available' ? 'Disponibile' : item.status}
+                                                    </Badge>
+                                                </div>
                                             </div>
-                                            <Badge variant="success" className="self-start text-[10px]">{item.status}</Badge>
-                                        </CardContent>
-                                    </Card>
+
+                                            <CardContent className="p-3 flex-1 flex flex-col">
+                                                <div className="mb-2">
+                                                    <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-1">
+                                                        {item.category}
+                                                    </span>
+                                                    <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1 group-hover:text-primary-600 transition-colors" title={item.name}>
+                                                        {item.name}
+                                                    </h3>
+                                                </div>
+
+                                                <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
+                                                    {item.description}
+                                                </p>
+
+                                                <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
+                                                    <div className="flex items-center gap-1.5 max-w-[70%]">
+                                                        <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-700 shrink-0">
+                                                            {(item.owner?.displayName?.[0] || item.owner?.userName?.[0] || '?').toUpperCase()}
+                                                        </div>
+                                                        <span className="text-[10px] text-slate-400 truncate">
+                                                            {item.owner.displayName || item.owner.userName || 'Sconosciuto'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
                                 ))
                             ) : (
                                 <div className="col-span-full text-center py-6 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-200">

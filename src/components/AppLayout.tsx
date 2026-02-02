@@ -6,6 +6,7 @@ import { BottomNav } from './BottomNav';
 import { SideNav } from './SideNav';
 import { LogOutIcon } from './ui/Icons';
 import { Button } from './ui/Button';
+import { NotificationsBell } from './NotificationsBell';
 
 const AppLayout: React.FC = () => {
   const { logout } = useAuth();
@@ -50,6 +51,7 @@ const AppLayout: React.FC = () => {
             <span className="hidden lg:block text-sm text-slate-500 mr-2">
               {activeCommunityName}
             </span>
+            <NotificationsBell />
             <Button variant="ghost" size="sm" onClick={logout} className="!p-2 text-slate-400 lg:hidden">
               <LogOutIcon className="w-5 h-5" />
             </Button>
