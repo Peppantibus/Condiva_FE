@@ -38,14 +38,14 @@ export const Input: React.FC<InputProps> = ({
             disabled:bg-slate-50 disabled:text-slate-500
             transition-colors duration-200
             ${icon ? 'pl-10' : 'pl-4'} pr-4 py-3
-            ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border'}
+            ${error ? 'form-input-error form-input-shake' : 'border'}
             ${className}
           `}
                     {...props}
                 />
             </div>
             {error && (
-                <p className="mt-1 text-sm text-red-500 ml-1">{error}</p>
+                <p className="mt-1 text-sm form-error-text ml-1">{error}</p>
             )}
         </div>
     );

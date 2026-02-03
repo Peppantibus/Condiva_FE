@@ -1,20 +1,27 @@
-import React from 'react';
-
-const getMessage = (error: unknown) => {
-  if (!error) return null;
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  return 'Errore imprevisto.';
-};
+import React, { useState, useEffect } from 'react';
+import { ErrorDialog } from './ui/ErrorDialog';
 
 type Props = {
   error: unknown;
 };
 
 const ApiErrorBanner: React.FC<Props> = ({ error }) => {
-  const message = getMessage(error);
-  if (!message) return null;
-  return <div className="border px-3 py-2 text-sm">{message}</div>;
+  const [activeError, setActiveError] = useState<unknown>(null);
+
+  useEffect(() => {
+    if (error) {
+      setActiveError(error);
+    }
+  }, [error]);
+
+  if (!activeError) return null;
+
+  return (
+    <ErrorDialog
+      error={activeError}
+      onClear={() => setActiveError(null)}
+    />
+  );
 };
 
 export default ApiErrorBanner;

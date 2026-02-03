@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import ApiErrorBanner from '../components/ApiErrorBanner';
 import { register } from '../api/auth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
+import AuthErrorHandler from '../components/auth/AuthErrorHandler';
+import { ErrorDialog } from '../components/ui/ErrorDialog';
+import { AuthFieldErrors } from '../utils/authErrorMapper';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +18,8 @@ const RegisterPage: React.FC = () => {
     lastName: '',
   });
   const [error, setError] = React.useState<unknown>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<AuthFieldErrors>({});
+  const [systemError, setSystemError] = React.useState<unknown>(null);
   const [loading, setLoading] = React.useState(false);
 
   const handleChange = (field: keyof typeof form) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,15 +49,43 @@ const RegisterPage: React.FC = () => {
 
       <Card className="w-full max-w-sm border-none shadow-xl shadow-primary-500/5">
         <CardContent className="space-y-6">
-          <ApiErrorBanner error={error} />
+          <AuthErrorHandler
+            context="register"
+            error={error}
+            onFieldErrors={setFieldErrors}
+            onSystemError={setSystemError}
+          />
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <Input label="Nome" value={form.name} onChange={handleChange('name')} required placeholder="Mario" />
               <Input label="Cognome" value={form.lastName} onChange={handleChange('lastName')} required placeholder="Rossi" />
             </div>
-            <Input label="Username" value={form.username} onChange={handleChange('username')} required placeholder="mario_rossi" />
-            <Input label="Email" type="email" value={form.email} onChange={handleChange('email')} required placeholder="mario@example.com" />
-            <Input label="Password" type="password" value={form.password} onChange={handleChange('password')} required placeholder="••••••••" />
+            <Input
+              label="Username"
+              value={form.username}
+              onChange={handleChange('username')}
+              required
+              placeholder="mario_rossi"
+              error={fieldErrors.username}
+            />
+            <Input
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={handleChange('email')}
+              required
+              placeholder="mario@example.com"
+              error={fieldErrors.email}
+            />
+            <Input
+              label="Password"
+              type="password"
+              value={form.password}
+              onChange={handleChange('password')}
+              required
+              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+              error={fieldErrors.password}
+            />
 
             <Button type="submit" fullWidth isLoading={loading} size="lg" className="mt-2">
               Crea account
@@ -63,11 +95,14 @@ const RegisterPage: React.FC = () => {
       </Card>
 
       <p className="mt-8 text-center text-sm text-slate-500">
-        Hai già un account?{' '}
+        Hai giÃ  un account?{' '}
         <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700">
           Accedi
         </Link>
       </p>
+      {systemError && (
+        <ErrorDialog error={systemError} onClear={() => setSystemError(null)} />
+      )}
     </div>
   );
 };

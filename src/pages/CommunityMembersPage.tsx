@@ -27,23 +27,30 @@ const CommunityMembersPage: React.FC = () => {
     try {
       const [communityData, membershipsData] = await Promise.all([getCommunity(id), listMemberships()]);
       setCommunity(communityData);
-      setActiveCommunity(communityData.id, communityData.name);
+      if (communityData.id) {
+        setActiveCommunity(communityData.id, communityData.name ?? null);
+      }
 
       const communityMembers = membershipsData.filter((membership) => membership.communityId === id);
       setMemberships(communityMembers);
 
       if (communityMembers.length) {
         const repEntries = await Promise.all(
-          communityMembers.map(async (membership) => {
-            try {
-              const rep = await getUserReputation(id, membership.userId);
-              return [membership.userId, rep] as const;
-            } catch {
-              return [membership.userId, null] as const;
-            }
-          })
+          communityMembers
+            .filter((membership) => Boolean(membership.userId))
+            .map(async (membership) => {
+              try {
+                const rep = await getUserReputation(id, membership.userId as string);
+                return [membership.userId as string, rep] as const;
+              } catch {
+                return [membership.userId as string, null] as const;
+              }
+            })
         );
-        setReputations(new Map(repEntries.filter(([, rep]) => rep) as Array<[string, ReputationDetailsDto]>));
+        const validEntries = repEntries.flatMap(([memberId, rep]) =>
+          rep ? [[memberId, rep] as [string, ReputationDetailsDto]] : []
+        );
+        setReputations(new Map(validEntries));
       } else {
         setReputations(new Map());
       }
@@ -94,7 +101,7 @@ const CommunityMembersPage: React.FC = () => {
         <CardContent className="space-y-3">
           {memberships.length > 0 ? (
             memberships.map((membership) => {
-              const rep = reputations.get(membership.userId);
+              const rep = membership.userId ? reputations.get(membership.userId) : null;
               return (
                 <div key={membership.id} className="border border-slate-200 rounded-xl p-4 flex flex-col gap-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">

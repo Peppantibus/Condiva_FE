@@ -10,6 +10,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { HandHeartIcon, PlusIcon, TrashIcon } from '../components/ui/Icons';
+import { ConfirmationDialog } from '../components/ui/Dialog';
 
 const RequestsPage: React.FC = () => {
   const { activeCommunityId, userId } = useSession();
@@ -55,13 +56,15 @@ const RequestsPage: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
+      const neededFrom = form.neededFrom ? new Date(form.neededFrom) : undefined;
+      const neededTo = form.neededTo ? new Date(form.neededTo) : undefined;
       await createRequest({
         communityId: activeCommunityId,
         title: form.title,
         description: form.description,
         status: 'Open',
-        neededFrom: form.neededFrom || null,
-        neededTo: form.neededTo || null,
+        neededFrom,
+        neededTo,
       });
       setForm({ title: '', description: '', neededFrom: '', neededTo: '' });
       await loadRequests();
@@ -73,15 +76,23 @@ const RequestsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Sei sicuro di voler eliminare questa richiesta?')) return;
+  const [requestToDelete, setRequestToDelete] = React.useState<string | null>(null);
+
+  const handleDeleteClick = (id: string) => {
+    setRequestToDelete(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!requestToDelete) return;
     setError(null);
     setLoading(true);
     try {
-      await deleteRequest(id);
+      await deleteRequest(requestToDelete);
       await loadRequests();
+      setRequestToDelete(null);
     } catch (err) {
       setError(err);
+      setRequestToDelete(null);
     } finally {
       setLoading(false);
     }
@@ -154,7 +165,7 @@ const RequestsPage: React.FC = () => {
                   <CardContent className="p-3 flex-1 flex flex-col">
                     <div className="mb-2">
                       <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-1">
-                        {request.community.name}
+                        {request.community?.name || 'Community'}
                       </span>
                       <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1" title={request.title}>
                         {request.title}
@@ -168,10 +179,10 @@ const RequestsPage: React.FC = () => {
                     <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
                       <div className="flex items-center gap-1.5 max-w-[70%]">
                         <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-700 shrink-0">
-                          {(request.owner.displayName?.[0] || request.owner.userName?.[0] || '?').toUpperCase()}
+                          {(request.owner?.displayName?.[0] || request.owner?.userName?.[0] || '?').toUpperCase()}
                         </div>
                         <span className="text-[10px] text-slate-400 truncate">
-                          {request.owner.displayName || request.owner.userName || 'Sconosciuto'}
+                          {request.owner?.displayName || request.owner?.userName || 'Sconosciuto'}
                         </span>
                       </div>
 
@@ -225,7 +236,7 @@ const RequestsPage: React.FC = () => {
                         {request.title}
                       </h3>
                       <div className="text-[10px] text-slate-400">
-                        {new Date(request.createdAt).toLocaleDateString()}
+                        {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : '-'}
                       </div>
                     </div>
 
@@ -241,7 +252,11 @@ const RequestsPage: React.FC = () => {
                       </Link>
 
                       <button
-                        onClick={() => handleDelete(request.id)}
+                        onClick={() => {
+                          if (request.id) {
+                            handleDeleteClick(request.id);
+                          }
+                        }}
                         className="text-slate-300 hover:text-red-500 transition-colors p-1 -mr-1 rounded-full hover:bg-red-50"
                         title="Elimina"
                       >
@@ -302,6 +317,17 @@ const RequestsPage: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmationDialog
+        isOpen={!!requestToDelete}
+        title="Elimina Richiesta"
+        description="Sei sicuro di voler eliminare questa richiesta? L'azione è irreversibile."
+        confirmLabel="Elimina"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setRequestToDelete(null)}
+        isLoading={loading}
+      />
     </div>
   );
 };

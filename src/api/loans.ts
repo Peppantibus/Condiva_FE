@@ -29,7 +29,7 @@ export const deleteLoan = (id: string) => apiClient.loansDELETE(id);
 
 export const startLoan = (id: string) => apiClient.start(id);
 
-export const returnLoan = (id: string) => apiClient['return'](id);
+export const returnLoan = (id: string) => apiClient.returnConfirm(id);
 
 export const requestReturn = (id: string) => apiClient.returnRequest(id);
 

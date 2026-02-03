@@ -68,7 +68,7 @@ const RequestOfferPage: React.FC = () => {
         communityId: activeCommunityId,
         offererUserId: userId,
         requestId: id,
-        itemId: form.itemId || null,
+        itemId: form.itemId || undefined,
         message: form.message,
         status: 'Open',
       });

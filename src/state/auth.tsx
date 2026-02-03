@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { configureApi } from '../api/client';
-import { AuthTokens, login as loginApi, refreshToken as refreshTokenApi } from '../api/auth';
+import { configureApi, type AuthTokens } from '../api/client';
+import { login as loginApi, refreshToken as refreshTokenApi } from '../api/auth';
 import { LoginRequestDto } from '../api/types';
 
 const ACCESS_TOKEN_KEY = 'condiva.auth.accessToken';
@@ -67,13 +67,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  React.useEffect(() => {
+  const [isConfigured, setIsConfigured] = React.useState(false);
+
+  React.useLayoutEffect(() => {
     configureApi({
       getAccessToken: () => tokenRef.current,
       setTokens,
       refreshTokens,
       onUnauthorized: () => setTokens(null),
     });
+    setIsConfigured(true);
   }, [refreshTokens, setTokens]);
 
   const value = useMemo(
@@ -85,6 +88,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }),
     [tokenState, refreshTokenState, login, logout]
   );
+
+  // Block rendering of children until API is configured to prevent race conditions
+  if (!isConfigured) {
+    return null;
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

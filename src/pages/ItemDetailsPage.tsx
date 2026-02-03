@@ -8,6 +8,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { ChevronLeftIcon, PackageIcon } from '../components/ui/Icons';
 import { useSession } from '../state/session';
+import { ConfirmationDialog } from '../components/ui/Dialog';
 
 const ItemDetailsPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -36,12 +37,17 @@ const ItemDetailsPage: React.FC = () => {
         loadItem();
     }, [loadItem]);
 
-    const handleRequestLoan = async () => {
-        if (!item || !activeCommunityId || !userId) return;
+    const [showLoanConfirmation, setShowLoanConfirmation] = useState(false);
 
-        if (!window.confirm('Vuoi richiedere il prestito di questo oggetto? Il proprietario dovrà confermare.')) {
-            return;
-        }
+    const handleRequestLoanClick = () => {
+        if (!item || !activeCommunityId || !userId) return;
+        setShowLoanConfirmation(true);
+    };
+
+    const handleConfirmLoan = async () => {
+        if (!item || !item.id || !activeCommunityId || !userId) return;
+        const lenderId = item.owner?.id;
+        if (!lenderId) return;
 
         setActionLoading(true);
         setError(null);
@@ -49,15 +55,17 @@ const ItemDetailsPage: React.FC = () => {
             await createLoan({
                 communityId: activeCommunityId,
                 itemId: item.id,
-                lenderUserId: item.owner.id,
+                lenderUserId: lenderId,
                 borrowerUserId: userId,
                 status: 'Reserved',
                 startAt: new Date(), // Request for today
             });
+            setShowLoanConfirmation(false);
             // Navigate to loan list or show success
             navigate('/loans');
         } catch (err) {
             setError(err);
+            setShowLoanConfirmation(false);
         } finally {
             setActionLoading(false);
         }
@@ -149,7 +157,7 @@ const ItemDetailsPage: React.FC = () => {
                         <Button
                             fullWidth
                             size="lg"
-                            onClick={handleRequestLoan}
+                            onClick={handleRequestLoanClick}
                             isLoading={actionLoading}
                             disabled={actionLoading}
                             className="shadow-lg shadow-primary-500/20"
@@ -167,6 +175,16 @@ const ItemDetailsPage: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            <ConfirmationDialog
+                isOpen={showLoanConfirmation}
+                title="Conferma Richiesta"
+                description="Vuoi richiedere il prestito di questo oggetto? Il proprietario riceverà una notifica e dovrà confermare."
+                confirmLabel="Sì, Richiedi"
+                onConfirm={handleConfirmLoan}
+                onCancel={() => setShowLoanConfirmation(false)}
+                isLoading={actionLoading}
+            />
         </div>
     );
 };

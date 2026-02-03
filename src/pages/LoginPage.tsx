@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import ApiErrorBanner from '../components/ApiErrorBanner';
 import { useAuth } from '../state/auth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
+import AuthErrorHandler from '../components/auth/AuthErrorHandler';
+import { ErrorDialog } from '../components/ui/ErrorDialog';
+import { AuthFieldErrors } from '../utils/authErrorMapper';
 
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -13,6 +15,8 @@ const LoginPage: React.FC = () => {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState<unknown>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<AuthFieldErrors>({});
+  const [systemError, setSystemError] = React.useState<unknown>(null);
   const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -32,7 +36,6 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       <div className="w-full max-w-sm mb-8 text-center">
-        {/* Logo */}
         <div className="mb-4 flex justify-center">
           <img src={logo} alt="Condiva" className="w-24 h-24 object-contain" />
         </div>
@@ -42,7 +45,12 @@ const LoginPage: React.FC = () => {
 
       <Card className="w-full max-w-sm border-none shadow-xl shadow-primary-500/5">
         <CardContent className="space-y-6">
-          <ApiErrorBanner error={error} />
+          <AuthErrorHandler
+            context="login"
+            error={error}
+            onFieldErrors={setFieldErrors}
+            onSystemError={setSystemError}
+          />
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Username"
@@ -59,6 +67,7 @@ const LoginPage: React.FC = () => {
                 onChange={(event) => setPassword(event.target.value)}
                 required
                 placeholder="Inserisci la password"
+                error={fieldErrors.password}
               />
               <div className="flex justify-end pt-1">
                 <Link to="/recovery" className="text-xs font-medium text-primary-600 hover:text-primary-700">
@@ -80,6 +89,9 @@ const LoginPage: React.FC = () => {
           Registrati
         </Link>
       </p>
+      {systemError && (
+        <ErrorDialog error={systemError} onClear={() => setSystemError(null)} />
+      )}
     </div>
   );
 };

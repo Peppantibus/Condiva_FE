@@ -9,6 +9,7 @@ import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { PackageIcon, PlusIcon, TrashIcon } from '../components/ui/Icons';
 import { Link } from 'react-router-dom';
+import { ConfirmationDialog } from '../components/ui/Dialog';
 
 const ItemsPage: React.FC = () => {
   const { activeCommunityId, userId } = useSession();
@@ -66,15 +67,23 @@ const ItemsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Eliminare questo oggetto?')) return;
+  const [itemToDelete, setItemToDelete] = React.useState<string | null>(null);
+
+  const handleDeleteClick = (id: string) => {
+    setItemToDelete(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
     setError(null);
     setLoading(true);
     try {
-      await deleteItem(id);
+      await deleteItem(itemToDelete);
       await loadItems();
+      setItemToDelete(null);
     } catch (err) {
       setError(err);
+      setItemToDelete(null); // Close dialog on error too? Or keep open? Usually close or show error. Error is shown in banner.
     } finally {
       setLoading(false);
     }
@@ -185,7 +194,9 @@ const ItemsPage: React.FC = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            handleDelete(item.id);
+                            if (item.id) {
+                              handleDeleteClick(item.id);
+                            }
                           }}
                           className="bg-white/80 backdrop-blur-sm text-slate-300 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 shadow-sm border border-slate-100"
                           title="Elimina"
@@ -257,6 +268,17 @@ const ItemsPage: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmationDialog
+        isOpen={!!itemToDelete}
+        title="Elimina Oggetto"
+        description="Sei sicuro di voler eliminare questo oggetto? L'azione è irreversibile."
+        confirmLabel="Elimina"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setItemToDelete(null)}
+        isLoading={loading}
+      />
     </div>
   );
 };

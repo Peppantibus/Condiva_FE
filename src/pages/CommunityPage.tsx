@@ -134,6 +134,19 @@ const CommunityPage: React.FC = () => {
     }
   };
 
+  const [copyCodeSuccess, setCopyCodeSuccess] = React.useState(false); // Add new state
+
+  const handleCopyCode = async () => {
+    if (!invite?.enterCode) return;
+    try {
+      await navigator.clipboard.writeText(invite.enterCode);
+      setCopyCodeSuccess(true);
+      setTimeout(() => setCopyCodeSuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between">
@@ -159,7 +172,11 @@ const CommunityPage: React.FC = () => {
               return (
                 <Card
                   key={membership.communityId}
-                  onClick={() => setActiveCommunity(membership.communityId, community?.name || membership.communityId)}
+                  onClick={() => {
+                    if (membership.communityId) {
+                      setActiveCommunity(membership.communityId, community?.name || membership.communityId);
+                    }
+                  }}
                   className={`border-2 transition-all flex overflow-hidden cursor-pointer hover:shadow-md ${isActive ? 'border-primary-500 bg-primary-50/50' : 'border-transparent hover:border-slate-200'}`}
                 >
                   <div className="w-24 bg-slate-100 flex items-center justify-center shrink-0">
@@ -289,13 +306,25 @@ const CommunityPage: React.FC = () => {
           </div>
 
           {invite && (
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-2 animate-in fade-in">
-              <p className="text-xs text-slate-500 uppercase tracking-wide font-bold mb-1">Codice Invito</p>
-              <div className="text-2xl font-mono font-bold text-primary-600 tracking-wider select-all">
-                {invite.enterCode}
+            <div className="bg-primary-50 p-4 rounded-xl border border-primary-200 mt-2 animate-in fade-in">
+              <p className="text-xs text-primary-700 uppercase tracking-wide font-bold mb-2">Codice Invito</p>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={invite.enterCode}
+                  readOnly
+                  disabled
+                  className="flex-1 px-3 py-2 text-sm font-mono bg-white border border-primary-200 rounded-lg text-slate-700 cursor-not-allowed"
+                />
+                <Button variant="primary" size="sm" onClick={handleCopyCode}>
+                  {copyCodeSuccess ? "✓ Copiato!" : "Copia Codice"}
+                </Button>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
-                Scade il: {new Date(invite.expiresAt).toLocaleDateString()} alle {new Date(invite.expiresAt).toLocaleTimeString()}
+              <p className="text-xs text-primary-600 mt-2">
+                Scade il: {invite.expiresAt ? new Date(invite.expiresAt).toLocaleDateString() : '-'} alle {invite.expiresAt ? new Date(invite.expiresAt).toLocaleTimeString() : '-'}
+              </p>
+              <p className="text-xs text-slate-500 mt-2">
+                Condividi questo codice con chi vuoi invitare.
               </p>
             </div>
           )}
@@ -334,7 +363,7 @@ const CommunityPage: React.FC = () => {
                   </Button>
                 </div>
                 <p className="text-xs text-primary-600 mt-2">
-                  Scade il: {new Date(inviteLink.expiresAt).toLocaleDateString()} alle {new Date(inviteLink.expiresAt).toLocaleTimeString()}
+                  Scade il: {inviteLink.expiresAt ? new Date(inviteLink.expiresAt).toLocaleDateString() : '-'} alle {inviteLink.expiresAt ? new Date(inviteLink.expiresAt).toLocaleTimeString() : '-'}
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
                   Condividi questo link con chi vuoi invitare. Il link è pronto all'uso!

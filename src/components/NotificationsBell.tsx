@@ -279,6 +279,7 @@ export const NotificationsBell: React.FC = () => {
                   key={notification.id}
                   type="button"
                   onClick={async () => {
+                    if (!notification.id) return;
                     await handleNotificationClick(notification.id);
                     await handleNavigateFromNotification(notification);
                     setIsOpen(false);
@@ -310,4 +311,3 @@ export const NotificationsBell: React.FC = () => {
     </div>
   );
 };
-

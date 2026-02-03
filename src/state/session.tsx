@@ -110,9 +110,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const byId = new Map(communities.map((community) => [community.id, community]));
         if (activeCommunityId) {
           const active = byId.get(activeCommunityId);
-          if (active) {
+          if (active?.id) {
             if (activeCommunityName !== active.name) {
-              setActiveCommunity(active.id, active.name);
+              setActiveCommunity(active.id, active.name ?? null);
             }
             return;
           }
@@ -120,7 +120,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (communities.length === 1) {
           const onlyCommunity = communities[0];
-          setActiveCommunity(onlyCommunity.id, onlyCommunity.name ?? null);
+          if (onlyCommunity.id) {
+            setActiveCommunity(onlyCommunity.id, onlyCommunity.name ?? null);
+          } else {
+            setActiveCommunity(null, null);
+          }
         } else if (activeCommunityId && !byId.has(activeCommunityId)) {
           setActiveCommunity(null, null);
         }

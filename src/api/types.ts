@@ -5,44 +5,37 @@ export type LoanStatus = 'Reserved' | 'InLoan' | 'ReturnRequested' | 'Returned' 
 export type MembershipRole = 'Owner' | 'Member' | 'Moderator';
 export type MembershipStatus = 'Invited' | 'Active' | 'Suspended';
 
-type NonUndefined<T> = T extends undefined ? never : T;
-type DeepRequired<T> =
-  T extends Function ? T :
-  T extends Array<infer U> ? Array<DeepRequired<NonUndefined<U>>> :
-  T extends object ? { [K in keyof T]-?: DeepRequired<NonUndefined<T[K]>> } :
-  NonUndefined<T>;
-
-export type AccessTokenResult = DeepRequired<import('./client/client.api').IAccessTokenResult>;
-export type RefreshTokenDto = DeepRequired<import('./client/client.api').IRefreshTokenDto>;
-export type UserDto = DeepRequired<import('./client/client.api').IUserDto>;
-export type UserSummaryDto = DeepRequired<import('./client/client.api').IUserSummaryDto>;
-export type CommunitySummaryDto = DeepRequired<import('./client/client.api').ICommunitySummaryDto>;
-export type CommunityListItemDto = DeepRequired<import('./client/client.api').ICommunityListItemDto>;
-export type CommunityDetailsDto = DeepRequired<import('./client/client.api').ICommunityDetailsDto>;
-export type MembershipListItemDto = DeepRequired<import('./client/client.api').IMembershipListItemDto>;
-export type MembershipDetailsDto = DeepRequired<import('./client/client.api').IMembershipDetailsDto>;
-export type ItemListItemDto = DeepRequired<import('./client/client.api').IItemListItemDto>;
-export type ItemDetailsDto = DeepRequired<import('./client/client.api').IItemDetailsDto>;
-export type RequestListItemDto = DeepRequired<import('./client/client.api').IRequestListItemDto>;
-export type RequestDetailsDto = DeepRequired<import('./client/client.api').IRequestDetailsDto>;
-export type OfferListItemDto = DeepRequired<import('./client/client.api').IOfferListItemDto>;
-export type OfferDetailsDto = DeepRequired<import('./client/client.api').IOfferDetailsDto>;
-export type OfferStatusResponseDto = DeepRequired<import('./client/client.api').IOfferStatusResponseDto>;
-export type LoanListItemDto = DeepRequired<import('./client/client.api').ILoanListItemDto>;
-export type LoanDetailsDto = DeepRequired<import('./client/client.api').ILoanDetailsDto>;
-export type LoanListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').ILoanListItemDtoPagedResponseDto>;
-export type EventListItemDto = DeepRequired<import('./client/client.api').IEventListItemDto>;
-export type EventDetailsDto = DeepRequired<import('./client/client.api').IEventDetailsDto>;
-export type InviteCodeResponseDto = DeepRequired<import('./client/client.api').IInviteCodeResponseDto>;
-export type InviteLinkResponseDto = DeepRequired<import('./client/client.api').IInviteLinkResponseDto>;
-export type ReputationDetailsDto = DeepRequired<import('./client/client.api').IReputationDetailsDto>;
-export type ReputationWeightsDto = DeepRequired<import('./client/client.api').IReputationWeightsDto>;
-export type ItemListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IItemListItemDtoPagedResponseDto>;
-export type OfferListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IOfferListItemDtoPagedResponseDto>;
-export type RequestListItemDtoPagedResponseDto = DeepRequired<import('./client/client.api').IRequestListItemDtoPagedResponseDto>;
-export type NotificationListItemDto = DeepRequired<import('./client/client.api').INotificationListItemDto>;
-export type NotificationDetailsDto = DeepRequired<import('./client/client.api').INotificationDetailsDto>;
-export type NotificationListItemDtoPagedResult = DeepRequired<import('./client/client.api').INotificationListItemDtoPagedResult>;
+export type AccessTokenResult = import('./client/client.api').IAccessTokenResult;
+export type RefreshTokenDto = import('./client/client.api').IRefreshTokenDto;
+export type UserDto = import('./client/client.api').IUserDto;
+export type UserSummaryDto = import('./client/client.api').IUserSummaryDto;
+export type CommunitySummaryDto = import('./client/client.api').ICommunitySummaryDto;
+export type CommunityListItemDto = import('./client/client.api').ICommunityListItemDto;
+export type CommunityDetailsDto = import('./client/client.api').ICommunityDetailsDto;
+export type MembershipListItemDto = import('./client/client.api').IMembershipListItemDto;
+export type MembershipDetailsDto = import('./client/client.api').IMembershipDetailsDto;
+export type ItemListItemDto = import('./client/client.api').IItemListItemDto;
+export type ItemDetailsDto = import('./client/client.api').IItemDetailsDto;
+export type RequestListItemDto = import('./client/client.api').IRequestListItemDto;
+export type RequestDetailsDto = import('./client/client.api').IRequestDetailsDto;
+export type OfferListItemDto = import('./client/client.api').IOfferListItemDto;
+export type OfferDetailsDto = import('./client/client.api').IOfferDetailsDto;
+export type OfferStatusResponseDto = import('./client/client.api').IOfferStatusResponseDto;
+export type LoanListItemDto = import('./client/client.api').ILoanListItemDto;
+export type LoanDetailsDto = import('./client/client.api').ILoanDetailsDto;
+export type LoanListItemDtoPagedResponseDto = import('./client/client.api').ILoanListItemDtoPagedResponseDto;
+export type EventListItemDto = import('./client/client.api').IEventListItemDto;
+export type EventDetailsDto = import('./client/client.api').IEventDetailsDto;
+export type InviteCodeResponseDto = import('./client/client.api').IInviteCodeResponseDto;
+export type InviteLinkResponseDto = import('./client/client.api').IInviteLinkResponseDto;
+export type ReputationDetailsDto = import('./client/client.api').IReputationDetailsDto;
+export type ReputationWeightsDto = import('./client/client.api').IReputationWeightsDto;
+export type ItemListItemDtoPagedResponseDto = import('./client/client.api').IItemListItemDtoPagedResponseDto;
+export type OfferListItemDtoPagedResponseDto = import('./client/client.api').IOfferListItemDtoPagedResponseDto;
+export type RequestListItemDtoPagedResponseDto = import('./client/client.api').IRequestListItemDtoPagedResponseDto;
+export type NotificationListItemDto = import('./client/client.api').INotificationListItemDto;
+export type NotificationDetailsDto = import('./client/client.api').INotificationDetailsDto;
+export type NotificationListItemDtoPagedResult = import('./client/client.api').INotificationListItemDtoPagedResult;
 export type NotificationMarkReadRequestDto = import('./client/client.api').INotificationMarkReadRequestDto;
 
 export type CreateCommunityRequestDto = import('./client/client.api').ICreateCommunityRequestDto;

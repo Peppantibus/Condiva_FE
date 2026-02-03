@@ -28,7 +28,7 @@ const RequestDetailsPage: React.FC = () => {
         getRequestOffers(id, { page: 1, pageSize: 50 }),
       ]);
       setRequest(requestData);
-      setOffers(offersData.items);
+      setOffers(offersData.items ?? []);
     } catch (err) {
       setError(err);
     } finally {
@@ -165,7 +165,7 @@ const RequestDetailsPage: React.FC = () => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleAccept(offer.id)}
+                            onClick={() => offer.id && handleAccept(offer.id)}
                             disabled={loading || !requesterId}
                           >
                             Accetta
@@ -174,7 +174,7 @@ const RequestDetailsPage: React.FC = () => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleReject(offer.id)}
+                            onClick={() => offer.id && handleReject(offer.id)}
                             disabled={loading}
                           >
                             Rifiuta
@@ -186,7 +186,7 @@ const RequestDetailsPage: React.FC = () => {
                           type="button"
                           variant="danger"
                           size="sm"
-                          onClick={() => handleWithdraw(offer.id)}
+                          onClick={() => offer.id && handleWithdraw(offer.id)}
                           disabled={loading}
                         >
                           Ritira

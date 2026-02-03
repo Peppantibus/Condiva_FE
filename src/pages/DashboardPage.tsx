@@ -110,10 +110,10 @@ const DashboardPage: React.FC = () => {
                                             <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
                                                 <div className="flex items-center gap-1.5 max-w-[70%]">
                                                     <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-700 shrink-0">
-                                                        {(request.owner.displayName?.[0] || request.owner.userName?.[0] || '?').toUpperCase()}
+                                                        {(request.owner?.displayName?.[0] || request.owner?.userName?.[0] || '?').toUpperCase()}
                                                     </div>
                                                     <span className="text-[10px] text-slate-400 truncate">
-                                                        {request.owner.displayName || request.owner.userName || 'Sconosciuto'}
+                                                        {request.owner?.displayName || request.owner?.userName || 'Sconosciuto'}
                                                     </span>
                                                 </div>
 
@@ -181,7 +181,7 @@ const DashboardPage: React.FC = () => {
                                                             {(item.owner?.displayName?.[0] || item.owner?.userName?.[0] || '?').toUpperCase()}
                                                         </div>
                                                         <span className="text-[10px] text-slate-400 truncate">
-                                                            {item.owner.displayName || item.owner.userName || 'Sconosciuto'}
+                                                            {item.owner?.displayName || item.owner?.userName || 'Sconosciuto'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -214,7 +214,7 @@ const DashboardPage: React.FC = () => {
                                             <CardContent className="p-3 flex-1 flex items-center justify-between">
                                                 <div>
                                                     <div className="font-medium text-slate-900 line-clamp-1">{request.title}</div>
-                                                    <div className="text-xs text-slate-500">{new Date(request.createdAt).toLocaleDateString()}</div>
+                                                    <div className="text-xs text-slate-500">{request.createdAt ? new Date(request.createdAt).toLocaleDateString() : '-'}</div>
                                                 </div>
                                                 <Badge variant={request.status === 'Open' ? 'purple' : 'default'}>{request.status}</Badge>
                                             </CardContent>

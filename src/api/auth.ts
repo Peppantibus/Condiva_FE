@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { AuthTokens } from './client';
 import {
   LoginRequestDto,
   RegisterRequestDto,
@@ -7,11 +8,6 @@ import {
   VerifyResendRequestDto,
   RefreshRequestDto,
 } from './types';
-
-export type AuthTokens = {
-  accessToken: string;
-  refreshToken?: string | null;
-};
 
 const readTokenValue = (value: unknown): string | null => {
   if (!value) return null;

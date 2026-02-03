@@ -28,7 +28,7 @@ const MePage: React.FC = () => {
         listMyOffers({ communityId: activeCommunityId, page: 1, pageSize: 20 }),
       ]);
       setReputation(repData);
-      setOffers(offersData.items);
+      setOffers(offersData.items ?? []);
     } catch (err) {
       setError(err);
     } finally {
