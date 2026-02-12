@@ -60,15 +60,17 @@ type SessionContextValue = {
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
 
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { token, isAuthenticated } = useAuth();
+  const { token, user, isAuthenticated } = useAuth();
   const [activeCommunityId, setActiveCommunityIdState] = useState<string | null>(
     () => localStorage.getItem(COMMUNITY_KEY)
   );
   const [activeCommunityName, setActiveCommunityNameState] = useState<string | null>(
     () => localStorage.getItem(COMMUNITY_NAME_KEY)
   );
-  const [userId, setUserIdState] = useState<string | null>(() => (token ? getUserIdFromToken(token) : null));
-  const [userName, setUserNameState] = useState<string | null>(() => (token ? getUserNameFromToken(token) : null));
+  const [userId, setUserIdState] = useState<string | null>(() => user?.id ?? (token ? getUserIdFromToken(token) : null));
+  const [userName, setUserNameState] = useState<string | null>(
+    () => user?.username ?? (token ? getUserNameFromToken(token) : null)
+  );
 
   const setActiveCommunity = React.useCallback((id: string | null, name?: string | null) => {
     setActiveCommunityIdState(id);
@@ -88,12 +90,12 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   React.useEffect(() => {
-    setUserIdState(token ? getUserIdFromToken(token) : null);
-    setUserNameState(token ? getUserNameFromToken(token) : null);
-  }, [token]);
+    setUserIdState(user?.id ?? (token ? getUserIdFromToken(token) : null));
+    setUserNameState(user?.username ?? (token ? getUserNameFromToken(token) : null));
+  }, [token, user]);
 
   React.useEffect(() => {
-    if (!isAuthenticated || !token) return;
+    if (!isAuthenticated) return;
     let cancelled = false;
 
     const resolveDefaultCommunity = async () => {
@@ -137,7 +139,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, token, activeCommunityId, activeCommunityName, setActiveCommunity]);
+  }, [isAuthenticated, activeCommunityId, activeCommunityName, setActiveCommunity]);
 
   const value = useMemo(
     () => ({
