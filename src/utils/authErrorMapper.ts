@@ -4,6 +4,7 @@ export type AuthFieldErrors = Partial<Record<'username' | 'email' | 'password' |
 
 type ParsedError = {
   status: number;
+  code?: string;
   message?: string;
   raw: unknown;
 };
@@ -12,21 +13,32 @@ const parseError = (err: unknown): ParsedError => {
   const errorObj = err as {
     status?: number;
     response?: { status?: number; data?: any } | string;
+    code?: string;
     message?: string;
+    error?: { code?: string; message?: string };
     result?: { error?: { message?: string } };
   };
 
   let status = errorObj?.status ?? (errorObj?.response as { status?: number })?.status ?? 0;
+  let code: string | undefined = errorObj?.code ?? errorObj?.error?.code;
   let message: string | undefined =
-    (errorObj?.response as { data?: { error?: { message?: string }; message?: string } })?.data?.error?.message ??
+    (errorObj?.response as { data?: { error?: { code?: string; message?: string }; message?: string } })?.data?.error?.message ??
     (errorObj?.response as { data?: { error?: { message?: string }; message?: string } })?.data?.message ??
+    errorObj?.error?.message ??
     errorObj?.message ??
     undefined;
+
+  const responseData = (errorObj?.response as { data?: any })?.data;
+  if (responseData && typeof responseData === 'object') {
+    code = responseData?.error?.code ?? responseData?.code ?? code;
+    message = responseData?.error?.message ?? responseData?.message ?? message;
+  }
 
   // Handle SwaggerException where response is a JSON string
   if (typeof errorObj?.response === 'string') {
     try {
       const parsedResponse = JSON.parse(errorObj.response);
+      code = parsedResponse?.error?.code ?? parsedResponse?.code ?? code;
       message = parsedResponse?.error?.message ?? parsedResponse?.message ?? message;
       // Also try to extract status if not already found
       if (!status && parsedResponse?.status) {
@@ -45,7 +57,7 @@ const parseError = (err: unknown): ParsedError => {
     message = errorObj.result.error.message;
   }
 
-  return { status, message, raw: err };
+  return { status, code, message, raw: err };
 };
 
 const mapRegisterValidationMessage = (message?: string) => {
@@ -98,11 +110,25 @@ const mapRegisterValidationMessage = (message?: string) => {
 };
 
 export const mapAuthError = (context: AuthContext, err: unknown) => {
-  const { status, message, raw } = parseError(err);
+  const { status, code, message, raw } = parseError(err);
+  const normalizedCode = code?.trim().toLowerCase();
   const isNetworkError = message === 'Network Error' || status === 0;
   const isServerError = status >= 500;
+  const isRateLimited = status === 429 || normalizedCode === 'ratelimited' || normalizedCode === 'rate_limited';
 
   if (context === 'login') {
+    if (isRateLimited) {
+      return {
+        fieldErrors: { password: 'Troppi tentativi. Attendi qualche minuto e riprova.' } as AuthFieldErrors,
+        systemError: null,
+      };
+    }
+    if (normalizedCode === 'emailnotverified' || normalizedCode === 'email_not_verified') {
+      return {
+        fieldErrors: { password: 'Email non verificata. Controlla la tua casella o richiedi un nuovo link.' } as AuthFieldErrors,
+        systemError: null,
+      };
+    }
     if (status === 400 || status === 401 || status === 403) {
       return {
         fieldErrors: { password: 'Credenziali non valide. Riprova o recupera la password.' } as AuthFieldErrors,
@@ -116,6 +142,22 @@ export const mapAuthError = (context: AuthContext, err: unknown) => {
   }
 
   // register
+  if (isRateLimited) {
+    return {
+      fieldErrors: { password: 'Troppi tentativi. Attendi qualche minuto e riprova.' } as AuthFieldErrors,
+      systemError: null,
+    };
+  }
+  if (status === 409) {
+    const mapped = mapRegisterValidationMessage(message);
+    if (mapped) {
+      return { fieldErrors: { [mapped.field]: mapped.message } as AuthFieldErrors, systemError: null };
+    }
+    return {
+      fieldErrors: { email: message ?? 'Username o email gia esistenti.' } as AuthFieldErrors,
+      systemError: null,
+    };
+  }
   if (status === 400 || status === 422) { // 422 is also common for validation
     const mapped = mapRegisterValidationMessage(message);
     if (mapped) {

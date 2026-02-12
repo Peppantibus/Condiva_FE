@@ -100,7 +100,7 @@ const RegisterPage: React.FC = () => {
           Accedi
         </Link>
       </p>
-      {systemError && (
+      {Boolean(systemError) && (
         <ErrorDialog error={systemError} onClear={() => setSystemError(null)} />
       )}
     </div>

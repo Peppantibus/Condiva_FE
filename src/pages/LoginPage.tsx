@@ -89,7 +89,7 @@ const LoginPage: React.FC = () => {
           Registrati
         </Link>
       </p>
-      {systemError && (
+      {Boolean(systemError) && (
         <ErrorDialog error={systemError} onClear={() => setSystemError(null)} />
       )}
     </div>
