@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { AuthTokens } from './client';
+import type { AuthSession, AuthUser } from './client';
 import {
   LoginRequestDto,
   RegisterRequestDto,
@@ -19,27 +19,39 @@ const readTokenValue = (value: unknown): string | null => {
   return null;
 };
 
-const extractTokens = (response: unknown): AuthTokens => {
+const extractUser = (value: unknown): AuthUser | null => {
+  if (!value || typeof value !== 'object') return null;
+  const data = value as Record<string, unknown>;
+  const id = typeof (data.id ?? data.Id) === 'string' ? String(data.id ?? data.Id) : null;
+  const username = typeof (data.username ?? data.Username) === 'string'
+    ? String(data.username ?? data.Username)
+    : null;
+  const name = typeof (data.name ?? data.Name) === 'string' ? String(data.name ?? data.Name) : null;
+  const lastName = typeof (data.lastName ?? data.LastName) === 'string'
+    ? String(data.lastName ?? data.LastName)
+    : null;
+
+  if (!id && !username && !name && !lastName) return null;
+  return { id, username, name, lastName };
+};
+
+const extractSession = (response: unknown): AuthSession => {
   if (!response || typeof response !== 'object') {
-    throw new Error('Invalid token response.');
+    return { accessToken: null, user: null };
   }
+
   const data = response as Record<string, unknown>;
   const accessToken =
     readTokenValue(data.accessToken ?? data.AccessToken) ??
     readTokenValue(data.token ?? data.Token);
-  if (!accessToken) {
-    throw new Error('Invalid token response.');
-  }
-  const refreshToken =
-    readTokenValue(data.newRefreshToken ?? data.NewRefreshToken) ??
-    readTokenValue(data.refreshToken ?? data.RefreshToken);
+  const user = extractUser(data.user ?? data.User);
 
-  return { accessToken, refreshToken };
+  return { accessToken, user };
 };
 
 export const login = async (payload: LoginRequestDto) => {
   const response = await apiClient.login(payload as any);
-  return extractTokens(response);
+  return extractSession(response);
 };
 
 export const register = async (payload: RegisterRequestDto) => {
@@ -62,7 +74,13 @@ export const resendVerification = async (payload: VerifyResendRequestDto) => {
   await apiClient.resend(payload as any);
 };
 
-export const refreshToken = async (payload: RefreshRequestDto) => {
+export const refreshSession = async (payload?: RefreshRequestDto) => {
   const response = await apiClient.refresh(payload as any);
-  return extractTokens(response);
+  return extractSession(response);
+};
+
+export const refreshToken = refreshSession;
+
+export const logout = async () => {
+  await apiClient.logout();
 };

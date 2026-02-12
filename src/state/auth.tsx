@@ -1,14 +1,11 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { configureApi, type AuthTokens } from '../api/client';
-import { login as loginApi, refreshToken as refreshTokenApi } from '../api/auth';
+import { configureApi, type AuthSession, type AuthUser } from '../api/client';
+import { login as loginApi, logout as logoutApi, refreshSession as refreshSessionApi } from '../api/auth';
 import { LoginRequestDto } from '../api/types';
-
-const ACCESS_TOKEN_KEY = 'condiva.auth.accessToken';
-const REFRESH_TOKEN_KEY = 'condiva.auth.refreshToken';
-const LEGACY_TOKEN_KEY = 'condiva.auth.token';
 
 type AuthContextValue = {
   token: string | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
   login: (payload: LoginRequestDto) => Promise<void>;
   logout: () => void;
@@ -17,80 +14,91 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [tokenState, setTokenState] = useState<string | null>(
-    () => localStorage.getItem(ACCESS_TOKEN_KEY) ?? localStorage.getItem(LEGACY_TOKEN_KEY)
-  );
-  const [refreshTokenState, setRefreshTokenState] = useState<string | null>(
-    () => localStorage.getItem(REFRESH_TOKEN_KEY)
-  );
+  const [tokenState, setTokenState] = useState<string | null>(null);
+  const [userState, setUserState] = useState<AuthUser | null>(null);
   const tokenRef = useRef<string | null>(tokenState);
-  const refreshTokenRef = useRef<string | null>(refreshTokenState);
+  const csrfTokenRef = useRef<string | null>(null);
 
-  const setTokens = useCallback((tokens: AuthTokens | null) => {
-    const accessToken = tokens?.accessToken ?? null;
-    const refreshToken = tokens?.refreshToken ?? null;
+  const setSession = useCallback((session: AuthSession | null) => {
+    const accessToken = session?.accessToken ?? null;
+    const user = session?.user ?? null;
     tokenRef.current = accessToken;
-    refreshTokenRef.current = refreshToken;
     setTokenState(accessToken);
-    setRefreshTokenState(refreshToken);
-    if (accessToken) {
-      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-      localStorage.removeItem(LEGACY_TOKEN_KEY);
-    } else {
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(LEGACY_TOKEN_KEY);
-    }
-    if (refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    } else {
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
+    setUserState(user);
+    if (!session) {
+      csrfTokenRef.current = null;
     }
   }, []);
 
+  const setCsrfToken = useCallback((token: string | null) => {
+    csrfTokenRef.current = token;
+  }, []);
+
   const login = useCallback(async (payload: LoginRequestDto) => {
-    const tokens = await loginApi(payload);
-    setTokens(tokens);
-  }, [setTokens]);
+    const session = await loginApi(payload);
+    setSession(session);
+  }, [setSession]);
 
   const logout = useCallback(() => {
-    setTokens(null);
-  }, [setTokens]);
+    void logoutApi()
+      .catch(() => undefined)
+      .finally(() => {
+        setSession(null);
+        setCsrfToken(null);
+      });
+  }, [setCsrfToken, setSession]);
 
-  const refreshTokens = useCallback(async () => {
-    const refreshToken = refreshTokenRef.current;
-    if (!refreshToken) return null;
+  const refreshSession = useCallback(async () => {
     try {
-      const tokens = await refreshTokenApi({ refreshToken: refreshToken });
-      return { ...tokens, refreshToken: tokens.refreshToken ?? refreshToken };
+      return await refreshSessionApi();
     } catch {
       return null;
     }
   }, []);
 
-  const [isConfigured, setIsConfigured] = React.useState(false);
+  const [isReady, setIsReady] = React.useState(false);
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     configureApi({
       getAccessToken: () => tokenRef.current,
-      setTokens,
-      refreshTokens,
-      onUnauthorized: () => setTokens(null),
+      getCsrfToken: () => csrfTokenRef.current,
+      setCsrfToken,
+      setSession,
+      refreshSession,
+      onUnauthorized: () => {
+        setSession(null);
+        setCsrfToken(null);
+      },
     });
-    setIsConfigured(true);
-  }, [refreshTokens, setTokens]);
+
+    let cancelled = false;
+    const bootstrap = async () => {
+      const session = await refreshSession();
+      if (!cancelled) {
+        setSession(session);
+        setIsReady(true);
+      }
+    };
+
+    void bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshSession, setCsrfToken, setSession]);
 
   const value = useMemo(
     () => ({
       token: tokenState,
-      isAuthenticated: Boolean(tokenState || refreshTokenState),
+      user: userState,
+      isAuthenticated: Boolean(tokenState || userState),
       login,
       logout,
     }),
-    [tokenState, refreshTokenState, login, logout]
+    [tokenState, userState, login, logout]
   );
 
-  // Block rendering of children until API is configured to prevent race conditions
-  if (!isConfigured) {
+  // Wait for cookie-session bootstrap before rendering protected routes.
+  if (!isReady) {
     return null;
   }
 
