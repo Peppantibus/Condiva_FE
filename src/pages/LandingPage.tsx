@@ -23,22 +23,30 @@ const LandingPage: React.FC = () => {
             <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-[#7C3AED]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 -z-10 pointer-events-none"></div>
 
             {/* Navbar */}
-            <nav className="w-full px-4 py-6 md:px-8 max-w-7xl mx-auto flex justify-between items-center z-50">
-                <div className="flex items-center gap-3">
-                    <img src={logo} alt="Condiva" className="w-16 h-16 md:w-20 md:h-20 object-contain" />
-                    <span className="font-black text-2xl tracking-tight text-[#7C3AED]">Condiva</span>
+            <nav className="w-full px-4 py-5 md:py-6 md:px-8 max-w-7xl mx-auto flex flex-wrap gap-y-3 justify-between items-center z-50">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <img
+                        src={logo}
+                        alt="Condiva"
+                        width={1536}
+                        height={1024}
+                        loading="eager"
+                        decoding="async"
+                        className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                    />
+                    <span className="font-black text-xl sm:text-2xl tracking-tight text-[#7C3AED] truncate">Condiva</span>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3 ml-auto">
                     <button
                         onClick={() => navigate('/login')}
-                        className="px-5 py-2.5 rounded-full font-bold text-slate-600 hover:text-[#7C3AED] hover:bg-[#F3E8FF] transition-colors"
+                        className="px-4 sm:px-5 py-2.5 rounded-full font-bold text-sm sm:text-base text-slate-700 hover:text-[#7C3AED] hover:bg-[#F3E8FF] transition-colors"
                     >
                         Accedi
                     </button>
                     <button
                         onClick={() => navigate('/register')}
-                        className="px-6 py-2.5 rounded-full font-bold bg-[#7C3AED] text-white shadow-lg shadow-[#7C3AED]/30 hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base whitespace-nowrap"
+                        className="px-5 sm:px-6 py-2.5 rounded-full font-bold bg-[#7C3AED] text-white shadow-lg shadow-[#7C3AED]/30 ring-2 ring-[#7C3AED]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm md:text-base whitespace-nowrap"
                     >
                         Registrati
                     </button>
@@ -63,20 +71,20 @@ const LandingPage: React.FC = () => {
                             </span>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
+                        <p className="text-lg md:text-xl text-slate-700 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
                             Smetti di comprare cose che userai una volta sola. Inizia a scambiare con i tuoi vicini e risparmia divertendoti!
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
                             <button
                                 onClick={() => navigate('/register')}
-                                className="w-full sm:w-auto px-8 py-4 bg-[#7C3AED] text-white font-bold rounded-full text-lg shadow-xl shadow-[#7C3AED]/30 hover:shadow-2xl hover:bg-[#6D28D9] hover:-translate-y-1 transition-all"
+                                className="w-full sm:w-auto px-8 py-4 bg-[#7C3AED] text-white font-bold rounded-full text-lg shadow-xl shadow-[#7C3AED]/30 ring-4 ring-[#7C3AED]/20 hover:shadow-2xl hover:bg-[#6D28D9] hover:-translate-y-1 transition-all"
                             >
                                 Inizia Gratis Ora
                             </button>
                             <button
                                 onClick={() => navigate('/login')}
-                                className="w-full sm:w-auto px-8 py-4 bg-white text-slate-700 font-bold rounded-full text-lg shadow-md border border-slate-200 hover:border-[#7C3AED] hover:text-[#7C3AED] transition-all"
+                                className="w-full sm:w-auto px-8 py-4 bg-white text-slate-800 font-bold rounded-full text-lg shadow-md border border-slate-300 hover:border-[#7C3AED] hover:text-[#7C3AED] transition-all"
                             >
                                 Ho già un account
                             </button>
@@ -89,6 +97,10 @@ const LandingPage: React.FC = () => {
                         <img
                             src={heroImage}
                             alt="Community sharing illustration"
+                            width={1024}
+                            height={1024}
+                            loading="eager"
+                            decoding="async"
                             className="relative z-10 w-full rounded-[2.5rem] shadow-2xl border-4 border-white bg-white select-none pointer-events-none"
                         />
                     </div>
@@ -101,7 +113,7 @@ const LandingPage: React.FC = () => {
                             <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">
                                 Semplice come un <span className="text-[#F59E0B]">sorriso</span>
                             </h2>
-                            <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                            <p className="text-slate-700 text-lg max-w-2xl mx-auto">
                                 Condiva è progettato per rendere la condivisione naturale e immediata.
                             </p>
                         </div>
@@ -134,10 +146,10 @@ const LandingPage: React.FC = () => {
             <footer className="bg-[#F8FAFC] py-12 px-4 border-t border-slate-100 mt-auto">
                 <div className="max-w-4xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 mb-6 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default select-none pointer-events-none">
-                        <img src={logo} alt="Condiva" className="w-8 h-8 object-contain" />
+                        <img src={logo} alt="Condiva" width={1536} height={1024} loading="lazy" decoding="async" className="w-8 h-8 object-contain" />
                         <span className="font-bold text-slate-700">Condiva</span>
                     </div>
-                    <p className="text-slate-500 text-sm mb-8 max-w-md mx-auto">
+                    <p className="text-slate-600 text-sm mb-8 max-w-md mx-auto">
                         La piattaforma di sharing economy per community felici. <br />
                         Fatto con 💜 per un futuro sostenibile.
                     </p>
@@ -164,10 +176,10 @@ const FeatureCard = ({ image, title, description, colorName }: any) => {
     return (
         <div className="flex flex-col items-center text-center">
             <div className={`mb-6 p-8 w-full aspect-square rounded-[2rem] flex items-center justify-center ${style.split(' ')[0]} bg-opacity-50 select-none pointer-events-none`}>
-                <img src={image} alt={title} className="w-full h-full object-contain drop-shadow-sm" />
+                <img src={image} alt={title} width={1024} height={1024} loading="lazy" decoding="async" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
             <h3 className="text-2xl font-black mb-3 text-slate-900">{title}</h3>
-            <p className="text-slate-600 font-medium leading-relaxed max-w-xs mx-auto">{description}</p>
+            <p className="text-slate-700 font-medium leading-relaxed max-w-xs mx-auto">{description}</p>
         </div>
     );
 };

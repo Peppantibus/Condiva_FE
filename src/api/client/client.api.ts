@@ -62,6 +62,48 @@ export class ApiClient {
     /**
      * @return OK
      */
+    google(body: GoogleLoginRequest, signal?: AbortSignal): Promise<RefreshTokenDto> {
+        let url_ = this.baseUrl + "/api/auth/google";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGoogle(_response);
+        });
+    }
+
+    protected processGoogle(response: Response): Promise<RefreshTokenDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RefreshTokenDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RefreshTokenDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     register(body: RegisterRequest, signal?: AbortSignal): Promise<void> {
         let url_ = this.baseUrl + "/api/auth/register";
         url_ = url_.replace(/[?&]$/, "");
@@ -133,6 +175,49 @@ export class ApiClient {
             });
         }
         return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    redirect(token: string, signal?: AbortSignal): Promise<boolean> {
+        let url_ = this.baseUrl + "/api/auth/reset/redirect?";
+        if (token === undefined || token === null)
+            throw new globalThis.Error("The parameter 'token' must be defined and cannot be null.");
+        else
+            url_ += "token=" + encodeURIComponent("" + token) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRedirect(_response);
+        });
+    }
+
+    protected processRedirect(response: Response): Promise<boolean> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : null as any;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<boolean>(null as any);
     }
 
     /**
@@ -260,9 +345,10 @@ export class ApiClient {
     }
 
     /**
+     * @param body (optional) 
      * @return OK
      */
-    refresh(body: RefreshTokenRequest, signal?: AbortSignal): Promise<RefreshTokenDto> {
+    refresh(body?: RefreshTokenRequest | undefined, signal?: AbortSignal): Promise<RefreshTokenDto> {
         let url_ = this.baseUrl + "/api/auth/refresh";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -299,6 +385,40 @@ export class ApiClient {
             });
         }
         return Promise.resolve<RefreshTokenDto>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    logout(signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/api/auth/logout";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processLogout(_response);
+        });
+    }
+
+    protected processLogout(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
     }
 
     /**
@@ -3768,6 +3888,58 @@ export interface IEventListItemDto {
     action?: string | undefined;
     payload?: string | undefined;
     createdAt?: Date;
+}
+
+export class GoogleLoginRequest implements IGoogleLoginRequest {
+    idToken?: string | undefined;
+    credential?: string | undefined;
+    token?: string | undefined;
+    expectedNonce?: string | undefined;
+    nonce?: string | undefined;
+
+    constructor(data?: IGoogleLoginRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.idToken = _data["idToken"];
+            this.credential = _data["credential"];
+            this.token = _data["token"];
+            this.expectedNonce = _data["expectedNonce"];
+            this.nonce = _data["nonce"];
+        }
+    }
+
+    static fromJS(data: any): GoogleLoginRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new GoogleLoginRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["idToken"] = this.idToken;
+        data["credential"] = this.credential;
+        data["token"] = this.token;
+        data["expectedNonce"] = this.expectedNonce;
+        data["nonce"] = this.nonce;
+        return data;
+    }
+}
+
+export interface IGoogleLoginRequest {
+    idToken?: string | undefined;
+    credential?: string | undefined;
+    token?: string | undefined;
+    expectedNonce?: string | undefined;
+    nonce?: string | undefined;
 }
 
 export class InviteCodeResponseDto implements IInviteCodeResponseDto {

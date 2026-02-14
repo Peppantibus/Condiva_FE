@@ -42,6 +42,17 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 py-8">
+      <div className="w-full max-w-sm mb-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Home
+        </Link>
+      </div>
       <div className="w-full max-w-sm mb-8 text-center">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-700 to-primary-600 bg-clip-text text-transparent">Crea Account</h1>
         <p className="text-slate-500 mt-2">Unisciti a Condiva oggi.</p>

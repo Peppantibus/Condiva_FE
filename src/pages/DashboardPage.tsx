@@ -5,10 +5,40 @@ import { listMyRequests } from '../api/requests';
 import { ItemListItemDtoPagedResponseDto, RequestListItemDtoPagedResponseDto } from '../api/types';
 import { useSession } from '../state/session';
 import { Button } from '../components/ui/Button';
-import { Card, CardContent, CardHeader } from '../components/ui/Card';
+import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { HandHeartIcon, PackageIcon } from '../components/ui/Icons';
 import { Link } from 'react-router-dom';
+import { sanitizePlainText } from '../utils/sanitize';
+
+const DashboardGridSkeleton: React.FC<{ count: number }> = ({ count }) => (
+    <>
+        {Array.from({ length: count }).map((_, idx) => (
+            <Card key={`dash-skeleton-${idx}`} className="overflow-hidden h-full flex flex-col border-slate-100 shadow-sm">
+                <div className="h-24 bg-slate-100 animate-pulse" />
+                <CardContent className="p-3 space-y-3">
+                    <div className="h-4 w-3/4 bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-full bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-5/6 bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-1/2 bg-slate-100 rounded animate-pulse" />
+                </CardContent>
+            </Card>
+        ))}
+    </>
+);
+
+const DashboardListSkeleton: React.FC<{ count: number }> = ({ count }) => (
+    <div className="space-y-3">
+        {Array.from({ length: count }).map((_, idx) => (
+            <Card key={`dash-list-skeleton-${idx}`} className="overflow-hidden">
+                <CardContent className="p-4 space-y-2">
+                    <div className="h-4 w-2/3 bg-slate-100 rounded animate-pulse" />
+                    <div className="h-3 w-1/3 bg-slate-100 rounded animate-pulse" />
+                </CardContent>
+            </Card>
+        ))}
+    </div>
+);
 
 const DashboardPage: React.FC = () => {
     const { activeCommunityId } = useSession();
@@ -17,9 +47,18 @@ const DashboardPage: React.FC = () => {
     const [myRequests, setMyRequests] = React.useState<RequestListItemDtoPagedResponseDto | null>(null);
     const [error, setError] = React.useState<unknown>(null);
     const [loading, setLoading] = React.useState(false);
+    const isMountedRef = React.useRef(true);
+    const latestRequestIdRef = React.useRef(0);
+
+    React.useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const loadDashboard = React.useCallback(async () => {
         if (!activeCommunityId) return;
+        const requestId = ++latestRequestIdRef.current;
         setError(null);
         setLoading(true);
         try {
@@ -28,13 +67,17 @@ const DashboardPage: React.FC = () => {
                 getCommunityAvailableItems(activeCommunityId, { page: 1, pageSize: 10 }),
                 listMyRequests({ communityId: activeCommunityId, page: 1, pageSize: 10 }),
             ]);
+            if (!isMountedRef.current || requestId !== latestRequestIdRef.current) return;
             setFeed(feedData);
             setItems(itemsData);
             setMyRequests(myRequestsData);
         } catch (err) {
+            if (!isMountedRef.current || requestId !== latestRequestIdRef.current) return;
             setError(err);
         } finally {
-            setLoading(false);
+            if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+                setLoading(false);
+            }
         }
     }, [activeCommunityId]);
 
@@ -56,6 +99,8 @@ const DashboardPage: React.FC = () => {
             </div>
         );
     }
+
+    const showInitialSkeleton = loading && !feed && !items && !myRequests;
 
     return (
         <div className="pb-20 lg:pb-0">
@@ -81,7 +126,9 @@ const DashboardPage: React.FC = () => {
                         </div>
 
                         <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-                            {feed?.items?.length ? (
+                            {showInitialSkeleton ? (
+                                <DashboardGridSkeleton count={4} />
+                            ) : feed?.items?.length ? (
                                 feed.items.map((request) => (
                                     <Card key={request.id} className="overflow-hidden h-full flex flex-col group border-slate-100 shadow-sm hover:shadow-md transition-all duration-200">
                                         {/* Header Image Area */}
@@ -98,13 +145,16 @@ const DashboardPage: React.FC = () => {
 
                                         <CardContent className="p-3 flex-1 flex flex-col">
                                             <div className="mb-2">
-                                                <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1" title={request.title}>
-                                                    {request.title}
+                                                <h3
+                                                    className="font-bold text-sm text-slate-900 leading-tight line-clamp-1"
+                                                    title={sanitizePlainText(request.title, { fallback: 'Richiesta', maxLength: 140 })}
+                                                >
+                                                    {sanitizePlainText(request.title, { fallback: 'Richiesta senza titolo', maxLength: 140 })}
                                                 </h3>
                                             </div>
 
                                             <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
-                                                {request.description}
+                                                {sanitizePlainText(request.description, { fallback: 'Nessuna descrizione disponibile.', maxLength: 220 })}
                                             </p>
 
                                             <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
@@ -113,7 +163,10 @@ const DashboardPage: React.FC = () => {
                                                         {(request.owner?.displayName?.[0] || request.owner?.userName?.[0] || '?').toUpperCase()}
                                                     </div>
                                                     <span className="text-[10px] text-slate-400 truncate">
-                                                        {request.owner?.displayName || request.owner?.userName || 'Sconosciuto'}
+                                                        {sanitizePlainText(
+                                                            request.owner?.displayName || request.owner?.userName || 'Sconosciuto',
+                                                            { fallback: 'Sconosciuto', maxLength: 60 }
+                                                        )}
                                                     </span>
                                                 </div>
 
@@ -142,7 +195,9 @@ const DashboardPage: React.FC = () => {
                         </h2>
 
                         <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 lg:gap-6">
-                            {items?.items?.length ? (
+                            {showInitialSkeleton ? (
+                                <DashboardGridSkeleton count={4} />
+                            ) : items?.items?.length ? (
                                 items.items.map((item) => (
                                     <Link to={`/items/${item.id}`} key={item.id} className="block h-full group">
                                         <Card className="overflow-hidden h-full flex flex-col border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-200">
@@ -164,15 +219,18 @@ const DashboardPage: React.FC = () => {
                                             <CardContent className="p-3 flex-1 flex flex-col">
                                                 <div className="mb-2">
                                                     <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-1">
-                                                        {item.category}
+                                                        {sanitizePlainText(item.category, { fallback: 'Categoria', maxLength: 40 })}
                                                     </span>
-                                                    <h3 className="font-bold text-sm text-slate-900 leading-tight line-clamp-1 group-hover:text-primary-600 transition-colors" title={item.name}>
-                                                        {item.name}
+                                                    <h3
+                                                        className="font-bold text-sm text-slate-900 leading-tight line-clamp-1 group-hover:text-primary-600 transition-colors"
+                                                        title={sanitizePlainText(item.name, { fallback: 'Oggetto', maxLength: 120 })}
+                                                    >
+                                                        {sanitizePlainText(item.name, { fallback: 'Oggetto senza nome', maxLength: 120 })}
                                                     </h3>
                                                 </div>
 
                                                 <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1 leading-relaxed">
-                                                    {item.description}
+                                                    {sanitizePlainText(item.description, { fallback: 'Nessuna descrizione disponibile.', maxLength: 220 })}
                                                 </p>
 
                                                 <div className="flex justify-between items-end pt-3 border-t border-slate-50 mt-auto">
@@ -181,7 +239,10 @@ const DashboardPage: React.FC = () => {
                                                             {(item.owner?.displayName?.[0] || item.owner?.userName?.[0] || '?').toUpperCase()}
                                                         </div>
                                                         <span className="text-[10px] text-slate-400 truncate">
-                                                            {item.owner?.displayName || item.owner?.userName || 'Sconosciuto'}
+                                                            {sanitizePlainText(item.owner?.displayName || item.owner?.userName || 'Sconosciuto', {
+                                                                fallback: 'Sconosciuto',
+                                                                maxLength: 60,
+                                                            })}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -203,7 +264,9 @@ const DashboardPage: React.FC = () => {
                     <section className="space-y-4">
                         <h2 className="text-lg font-bold text-slate-800 px-1">Le mie richieste</h2>
                         <div className="space-y-3">
-                            {myRequests?.items?.length ? (
+                            {showInitialSkeleton ? (
+                                <DashboardListSkeleton count={3} />
+                            ) : myRequests?.items?.length ? (
                                 myRequests.items.map((request) => (
                                     <Card key={request.id} className="overflow-hidden">
                                         <div className="flex">
@@ -213,7 +276,9 @@ const DashboardPage: React.FC = () => {
                                             </div>
                                             <CardContent className="p-3 flex-1 flex items-center justify-between">
                                                 <div>
-                                                    <div className="font-medium text-slate-900 line-clamp-1">{request.title}</div>
+                                                    <div className="font-medium text-slate-900 line-clamp-1">
+                                                        {sanitizePlainText(request.title, { fallback: 'Richiesta senza titolo', maxLength: 120 })}
+                                                    </div>
                                                     <div className="text-xs text-slate-500">{request.createdAt ? new Date(request.createdAt).toLocaleDateString() : '-'}</div>
                                                 </div>
                                                 <Badge variant={request.status === 'Open' ? 'purple' : 'default'}>{request.status}</Badge>

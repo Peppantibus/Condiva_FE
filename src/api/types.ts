@@ -56,6 +56,7 @@ export type UpdateLoanRequestDto = import('./client/client.api').IUpdateLoanRequ
 export type CreateEventRequestDto = import('./client/client.api').ICreateEventRequestDto;
 export type UpdateEventRequestDto = import('./client/client.api').IUpdateEventRequestDto;
 export type LoginRequestDto = import('./client/client.api').ILoginRequest;
+export type GoogleLoginRequestDto = import('./client/client.api').IGoogleLoginRequest;
 export type RegisterRequestDto = import('./client/client.api').IRegisterRequest;
 export type RecoveryRequestDto = import('./client/client.api').IRecoveryRequest;
 export type ResetRequestDto = import('./client/client.api').IResetPasswordDto;

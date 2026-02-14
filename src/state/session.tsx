@@ -1,9 +1,34 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import { listMyCommunities } from '../api/memberships';
 import { useAuth } from './auth';
+import { sanitizePlainText } from '../utils/sanitize';
 
 const COMMUNITY_KEY = 'condiva.session.communityId';
 const COMMUNITY_NAME_KEY = 'condiva.session.communityName';
+
+const readStorage = (key: string) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeStorage = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore storage write errors
+  }
+};
+
+const removeStorage = (key: string) => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore storage remove errors
+  }
+};
 
 const decodeJwtPayload = (token: string) => {
   const parts = token.split('.');
@@ -62,10 +87,10 @@ const SessionContext = createContext<SessionContextValue | undefined>(undefined)
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, user, isAuthenticated } = useAuth();
   const [activeCommunityId, setActiveCommunityIdState] = useState<string | null>(
-    () => localStorage.getItem(COMMUNITY_KEY)
+    () => readStorage(COMMUNITY_KEY)
   );
   const [activeCommunityName, setActiveCommunityNameState] = useState<string | null>(
-    () => localStorage.getItem(COMMUNITY_NAME_KEY)
+    () => readStorage(COMMUNITY_NAME_KEY)
   );
   const [userId, setUserIdState] = useState<string | null>(() => user?.id ?? (token ? getUserIdFromToken(token) : null));
   const [userName, setUserNameState] = useState<string | null>(
@@ -75,17 +100,19 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setActiveCommunity = React.useCallback((id: string | null, name?: string | null) => {
     setActiveCommunityIdState(id);
     if (id) {
-      localStorage.setItem(COMMUNITY_KEY, id);
+      writeStorage(COMMUNITY_KEY, id);
     } else {
-      localStorage.removeItem(COMMUNITY_KEY);
+      removeStorage(COMMUNITY_KEY);
     }
 
-    const resolvedName = id ? (name ?? null) : null;
+    const resolvedName = id
+      ? sanitizePlainText(name, { fallback: '', maxLength: 120 }) || null
+      : null;
     setActiveCommunityNameState(resolvedName);
     if (resolvedName) {
-      localStorage.setItem(COMMUNITY_NAME_KEY, resolvedName);
+      writeStorage(COMMUNITY_NAME_KEY, resolvedName);
     } else {
-      localStorage.removeItem(COMMUNITY_NAME_KEY);
+      removeStorage(COMMUNITY_NAME_KEY);
     }
   }, []);
 
@@ -93,6 +120,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setUserIdState(user?.id ?? (token ? getUserIdFromToken(token) : null));
     setUserNameState(user?.username ?? (token ? getUserNameFromToken(token) : null));
   }, [token, user]);
+
+  React.useEffect(() => {
+    if (isAuthenticated) return;
+    setActiveCommunityIdState(null);
+    setActiveCommunityNameState(null);
+    removeStorage(COMMUNITY_KEY);
+    removeStorage(COMMUNITY_NAME_KEY);
+  }, [isAuthenticated]);
 
   React.useEffect(() => {
     if (!isAuthenticated) return;

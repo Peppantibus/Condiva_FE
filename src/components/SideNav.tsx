@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { HomeIcon, UsersIcon, HandHeartIcon, UserIcon, PackageIcon, LogOutIcon, RepeatIcon } from './ui/Icons';
 import { useAuth } from '../state/auth';
 import { Button } from './ui/Button';
+import logo from '../assets/logo.png';
 
 export const SideNav: React.FC = () => {
     const { logout } = useAuth();
@@ -19,7 +20,7 @@ export const SideNav: React.FC = () => {
     return (
         <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200 z-50">
             <div className="p-6 border-b border-slate-100 flex items-center justify-center lg:justify-start gap-3">
-                <img src="/src/assets/logo.png" alt="Condiva Logo" className="h-10 w-auto object-contain" />
+                <img src={logo} alt="Condiva Logo" width={1536} height={1024} loading="eager" decoding="async" className="h-10 w-auto object-contain" />
                 <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent hidden lg:block">
                     Condiva
                 </span>

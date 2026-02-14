@@ -2,6 +2,7 @@ import { apiClient } from './client';
 import type { AuthSession, AuthUser } from './client';
 import {
   LoginRequestDto,
+  GoogleLoginRequestDto,
   RegisterRequestDto,
   RecoveryRequestDto,
   ResetRequestDto,
@@ -51,6 +52,11 @@ const extractSession = (response: unknown): AuthSession => {
 
 export const login = async (payload: LoginRequestDto) => {
   const response = await apiClient.login(payload as any);
+  return extractSession(response);
+};
+
+export const loginWithGoogle = async (payload: GoogleLoginRequestDto) => {
+  const response = await apiClient.google(payload as any);
   return extractSession(response);
 };
 

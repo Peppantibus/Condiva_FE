@@ -6,20 +6,30 @@ import { listMyOffers } from '../api/offers';
 import { OfferListItemDto, ReputationDetailsDto } from '../api/types';
 import { useSession } from '../state/session';
 import { Button } from '../components/ui/Button';
-import { Card, CardContent, CardHeader } from '../components/ui/Card';
+import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { UserIcon } from '../components/ui/Icons';
 import { Link } from 'react-router-dom';
+import { sanitizePlainText } from '../utils/sanitize';
 
 const MePage: React.FC = () => {
-  const { activeCommunityId, userId, userName } = useSession(); // Accessing userId explicitly if needed for display
+  const { activeCommunityId, userName } = useSession();
   const [reputation, setReputation] = React.useState<ReputationDetailsDto | null>(null);
   const [offers, setOffers] = React.useState<OfferListItemDto[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<unknown>(null);
+  const isMountedRef = React.useRef(true);
+  const latestRequestIdRef = React.useRef(0);
+
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const loadProfile = React.useCallback(async () => {
     if (!activeCommunityId) return;
+    const requestId = ++latestRequestIdRef.current;
     setError(null);
     setLoading(true);
     try {
@@ -27,12 +37,16 @@ const MePage: React.FC = () => {
         getMyReputation(activeCommunityId),
         listMyOffers({ communityId: activeCommunityId, page: 1, pageSize: 20 }),
       ]);
+      if (!isMountedRef.current || requestId !== latestRequestIdRef.current) return;
       setReputation(repData);
       setOffers(offersData.items ?? []);
     } catch (err) {
+      if (!isMountedRef.current || requestId !== latestRequestIdRef.current) return;
       setError(err);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [activeCommunityId]);
 
@@ -63,7 +77,11 @@ const MePage: React.FC = () => {
             <UserIcon className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold">{userName ? `@${userName}` : 'Il mio Profilo'}</h2>
+            <h2 className="text-xl font-bold">
+              {userName
+                ? `@${sanitizePlainText(userName, { fallback: 'utente', maxLength: 80 })}`
+                : 'Il mio Profilo'}
+            </h2>
             <p className="text-primary-100 text-sm">Community Member</p>
             {reputation && (
               <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-medium backdrop-blur-md">
@@ -119,7 +137,9 @@ const MePage: React.FC = () => {
               <Card key={offer.id}>
                 <CardContent className="p-4 flex justify-between items-center">
                   <div>
-                    <div className="font-medium text-slate-900">{offer.message}</div>
+                    <div className="font-medium text-slate-900">
+                      {sanitizePlainText(offer.message, { fallback: 'Messaggio non disponibile.', maxLength: 180 })}
+                    </div>
                   </div>
                   <Badge variant={offer.status === 'Accepted' ? 'success' : 'default'}>{offer.status}</Badge>
                 </CardContent>

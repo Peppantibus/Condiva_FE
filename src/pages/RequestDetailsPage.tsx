@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card, CardContent } from '../components/ui/Card';
 import { HandHeartIcon } from '../components/ui/Icons';
+import { sanitizePlainText } from '../utils/sanitize';
 
 const RequestDetailsPage: React.FC = () => {
   const { id } = useParams();
@@ -17,9 +18,18 @@ const RequestDetailsPage: React.FC = () => {
   const [offers, setOffers] = React.useState<OfferListItemDto[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<unknown>(null);
+  const isMountedRef = React.useRef(true);
+  const latestRequestIdRef = React.useRef(0);
+
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const loadDetails = React.useCallback(async () => {
     if (!id) return;
+    const requestId = ++latestRequestIdRef.current;
     setError(null);
     setLoading(true);
     try {
@@ -27,12 +37,16 @@ const RequestDetailsPage: React.FC = () => {
         getRequest(id),
         getRequestOffers(id, { page: 1, pageSize: 50 }),
       ]);
+      if (!isMountedRef.current || requestId !== latestRequestIdRef.current) return;
       setRequest(requestData);
       setOffers(offersData.items ?? []);
     } catch (err) {
+      if (!isMountedRef.current || requestId !== latestRequestIdRef.current) return;
       setError(err);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [id]);
 
@@ -111,15 +125,21 @@ const RequestDetailsPage: React.FC = () => {
           <CardContent className="p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">{request.title}</h2>
-                <p className="text-sm text-slate-600 mt-1">{request.description}</p>
+                <h2 className="text-lg font-bold text-slate-900">
+                  {sanitizePlainText(request.title, { fallback: 'Richiesta senza titolo', maxLength: 140 })}
+                </h2>
+                <p className="text-sm text-slate-600 mt-1">
+                  {sanitizePlainText(request.description, { fallback: 'Nessuna descrizione disponibile.', maxLength: 260 })}
+                </p>
               </div>
               <Badge variant="purple">{request.status}</Badge>
             </div>
             <div className="grid grid-cols-2 gap-4 text-xs text-slate-500">
               <div>
                 <div className="font-semibold uppercase tracking-wide text-[10px] text-slate-400">Richiedente</div>
-                <div className="text-slate-700">{requesterName}</div>
+                <div className="text-slate-700">
+                  {sanitizePlainText(requesterName, { fallback: 'Sconosciuto', maxLength: 80 })}
+                </div>
               </div>
               <div>
                 <div className="font-semibold uppercase tracking-wide text-[10px] text-slate-400">Periodo</div>
@@ -149,12 +169,16 @@ const RequestDetailsPage: React.FC = () => {
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="font-semibold text-slate-900">{offererName}</div>
+                        <div className="font-semibold text-slate-900">
+                          {sanitizePlainText(offererName, { fallback: 'Utente', maxLength: 80 })}
+                        </div>
                         <div className="text-xs text-slate-500">{createdAt}</div>
                       </div>
                       <Badge variant={offer.status === 'Open' ? 'purple' : 'default'}>{offer.status}</Badge>
                     </div>
-                    <div className="text-sm text-slate-700">{offer.message}</div>
+                    <div className="text-sm text-slate-700">
+                      {sanitizePlainText(offer.message, { fallback: 'Messaggio non disponibile.', maxLength: 240 })}
+                    </div>
                     <div className="text-xs text-slate-500">
                       Oggetto: {offer.itemId ? 'Associato' : 'Non indicato'}
                     </div>

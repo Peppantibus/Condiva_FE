@@ -1,17 +1,49 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { configureApi, type AuthSession, type AuthUser } from '../api/client';
-import { login as loginApi, logout as logoutApi, refreshSession as refreshSessionApi } from '../api/auth';
-import { LoginRequestDto } from '../api/types';
+import { login as loginApi, loginWithGoogle as loginWithGoogleApi, logout as logoutApi, refreshSession as refreshSessionApi } from '../api/auth';
+import { GoogleLoginRequestDto, LoginRequestDto } from '../api/types';
 
 type AuthContextValue = {
   token: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
   login: (payload: LoginRequestDto) => Promise<void>;
+  loginWithGoogle: (payload: GoogleLoginRequestDto) => Promise<void>;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+const LEGACY_AUTH_STORAGE_KEYS = [
+  'condiva.auth.accessToken',
+  'condiva.auth.refreshToken',
+  'condiva.auth.user',
+  'condiva_token',
+  'condiva_refresh_token',
+  'condiva_user',
+];
+
+const clearLegacyAuthStorage = () => {
+  try {
+    for (const key of LEGACY_AUTH_STORAGE_KEYS) {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    }
+  } catch {
+    // ignore storage cleanup errors
+  }
+};
+
+let bootstrapSessionPromise: Promise<AuthSession | null> | null = null;
+
+const runBootstrapRefresh = (refreshSession: () => Promise<AuthSession | null>) => {
+  if (!bootstrapSessionPromise) {
+    bootstrapSessionPromise = refreshSession().finally(() => {
+      bootstrapSessionPromise = null;
+    });
+  }
+  return bootstrapSessionPromise;
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tokenState, setTokenState] = useState<string | null>(null);
@@ -39,10 +71,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSession(session);
   }, [setSession]);
 
+  const loginWithGoogle = useCallback(async (payload: GoogleLoginRequestDto) => {
+    const session = await loginWithGoogleApi(payload);
+    setSession(session);
+  }, [setSession]);
+
   const logout = useCallback(() => {
     void logoutApi()
       .catch(() => undefined)
       .finally(() => {
+        clearLegacyAuthStorage();
         setSession(null);
         setCsrfToken(null);
       });
@@ -59,6 +97,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
+    clearLegacyAuthStorage();
+
     configureApi({
       getAccessToken: () => tokenRef.current,
       getCsrfToken: () => csrfTokenRef.current,
@@ -66,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession,
       refreshSession,
       onUnauthorized: () => {
+        clearLegacyAuthStorage();
         setSession(null);
         setCsrfToken(null);
       },
@@ -73,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     let cancelled = false;
     const bootstrap = async () => {
-      const session = await refreshSession();
+      const session = await runBootstrapRefresh(refreshSession);
       if (!cancelled) {
         setSession(session);
         setIsReady(true);
@@ -92,9 +133,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user: userState,
       isAuthenticated: Boolean(tokenState || userState),
       login,
+      loginWithGoogle,
       logout,
     }),
-    [tokenState, userState, login, logout]
+    [tokenState, userState, login, loginWithGoogle, logout]
   );
 
   // Wait for cookie-session bootstrap before rendering protected routes.
